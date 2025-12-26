@@ -17,21 +17,30 @@ type
     name*: string ## The target font's name.
     size*: float ## The default font size for the terminal.
 
+  UserConfig = object
+    shell*: string ## The shell that is to be used. Defaults to `sh`.
+
   Config* = object
     appearance*: AppearanceConfig
     font*: FontConfig
+    user*: UserConfig
 
 const
   AppearanceTabKey = "appearance"
   FontTabKey = "font"
+  UserTabKey = "user"
+
   BackgroundAttrKey = "background"
   NameAttrKey = "name"
   SizeAttrKey = "size"
+  ShellAttrKey = "shell"
 
   ## The default configuration that Nitty uses, if the user's config
   ## either doesn't exist, or is malformed.
   DefaultConfig = Config(
-    appearance: AppearanceConfig(background: "5050500A"), font: FontConfig(size: 24f)
+    appearance: AppearanceConfig(background: "5050500A"),
+    font: FontConfig(size: 24f),
+    user: UserConfig(shell: "sh"),
   )
 
 proc readConfig*(src: string): Option[Config] =
@@ -54,6 +63,12 @@ proc readConfig*(src: string): Option[Config] =
 
       config.font.size =
         fontTable[SizeAttrKey].getFloat(default = DefaultConfig.font.size)
+
+    if UserTabKey in data:
+      let userTable = data[UserTabKey]
+
+      config.user.shell =
+        userTable[ShellAttrKey].getStr(default = DefaultConfig.user.shell)
 
     return some(ensureMove(config))
   except parsetoml.TomlError as exc:
@@ -116,7 +131,11 @@ proc applyConfig*(terminal: Terminal, config: Config) {.raises: [PixieError].} =
     # HACK: Same as [2]
     terminal.font = readFont(&findUsableFont())
 
+  # Font size
   terminal.font.size = float32(config.font.size)
+
+  # Shell
+  terminal.shell = config.user.shell
 
 proc loadConfig*(
     path: Option[string] = none(string)

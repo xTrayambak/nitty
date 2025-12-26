@@ -30,12 +30,12 @@ type
     buffer*: pixie.Image
     font*: pixie.Font
     damagedRects*: seq[VTermRect]
-
     backgroundColor*: chroma.ColorRGBA
 
     cursorPos*: libvterm.VTermPos
-
     rows*, cols*: int32
+
+    shell*: string
 
   Terminal* = ref TerminalObj
 

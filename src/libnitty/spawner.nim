@@ -40,9 +40,9 @@ proc spawn*(terminal: Terminal) =
     for key, value in environ:
       putEnv(key, value)
 
-    let shell = findExe("bash")
+    let shell = findExe(terminal.shell)
     debug "Shell path. We're soon handing over control to the shell. Adios!",
-      path = shell
+      name = terminal.shell, path = shell
 
     discard close(master)
 
@@ -59,8 +59,8 @@ proc spawn*(terminal: Terminal) =
     putEnv("COLORTERM", "truecolor")
     putEnv("SHELL", shell)
 
-    discard posix.execlp(shell, "bash", nil)
-    quit(QuitFailure)
+    discard posix.execlp(shell, terminal.shell, nil)
+    quit(QuitSuccess)
   else:
     debug "We're the main process, continuing initialization", pid = pid
     discard posix.fcntl(
