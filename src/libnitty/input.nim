@@ -4,7 +4,8 @@
 import std/tables
 import pkg/xkb
 import bindings/libvterm
-import ./[types]
+import ./[grid, types]
+import ../surfer/app
 
 const SpecialKeysyms = {
   XKB_Key_Return: VTermKey.Enter,
@@ -35,13 +36,15 @@ proc handleTerminalKeybinds*(
   if modifier == VTermModifier.Ctrl and keysym == XKB_Key_Equal:
     # CTRL+PLUS: Increase font size
     terminal.font.size += 0.5f
-    terminal.fullDamage()
+    terminal.computeTermGrid(terminal.app.windowSize)
+    terminal.resize()
     return true
 
   if modifier == VTermModifier.Ctrl and keysym == XKB_Key_Minus:
     # CTRL+MINUS: Decrease font size
     terminal.font.size -= 0.5f
-    terminal.fullDamage()
+    terminal.computeTermGrid(terminal.app.windowSize)
+    terminal.resize()
     return true
 
   false

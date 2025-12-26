@@ -136,6 +136,9 @@ func hasKeyboard*(app: App): bool =
 func focused*(app: App): bool {.inline, raises: [].} =
   app.focused
 
+func windowSize*(app: App): IVec2 {.inline, raises: [].} =
+  app.windowSize
+
 func closureRequested*(app: App): bool {.inline, raises: [].} =
   ## This function returns `true` if the user or compositor
   ## has requested the closure of the app's main toplevel.

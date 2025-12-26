@@ -5,7 +5,7 @@ import std/[os, posix, importutils, tables, termios]
 import pkg/[vmath, shakar, chronicles, chroma, pixie, xkb]
 import ../surfer/app
 import bindings/libvterm
-import ./[coloring, config, input, pty, renderer, fonts, spawner, types]
+import ./[coloring, config, grid, input, pty, renderer, fonts, spawner, types]
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
   damage: proc(rect: VTermRect, user: pointer): int32 {.cdecl.} =
@@ -85,18 +85,6 @@ proc initializeBackend*(terminal: Terminal) =
     cast[ptr TerminalObj](terminal),
   )
 
-proc resize*(terminal: Terminal, columns, rows: int32) =
-  vterm_set_size(terminal.vterm.vt, rows, columns)
-
-  var ws = winsize(wsRow: rows.uint16, wsCol: columns.uint16)
-  discard pty.ioctl(terminal.vterm.fds.master, TIOCSWINSZ, ws.addr)
-
-  terminal.rows = rows
-  terminal.cols = columns
-
-  # Tell the renderer to redraw all cells
-  terminal.fullDamage()
-
 proc run*(terminal: Terminal) =
   for i in 0 ..< terminal.buffer.data.len:
     terminal.buffer.data[i] = bgra(80, 80, 80, 10)
@@ -129,12 +117,9 @@ proc run*(terminal: Terminal) =
       # echo "Resize to " & $event.windowSize
       terminal.buffer = newImage(event.windowSize.x, event.windowSize.y)
 
-      let metrics = computeFontMetrics(terminal)
-      let cols = int32(event.windowSize.x.float32 / metrics.cellWidth)
-      let rows = int32(event.windowSize.y.float32 / metrics.cellHeight)
-
       # echo $cols & 'x' & $rows
-      terminal.resize(cols, rows)
+      terminal.computeTermGrid(event.windowSize)
+      terminal.resize()
     else:
       discard
 
