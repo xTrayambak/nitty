@@ -1,0 +1,25 @@
+[package]
+name = "nitty"
+description = "A fast terminal emulator written in Nim"
+version = "0.1.0"
+license = "BSD3"
+kind = "Binary"
+backend = "C"
+binaries = ["nitty"]
+
+[toolchain]
+version = "2.2.0"
+
+[dependencies]
+pixie = ">= 5.1.0"
+shakar = ">= 0.1.3"
+xkb = ">= 1.4.1"
+vmath = ">= 2.0.1"
+chronicles = ">= 0.12.3"
+parsetoml = ">= 0.7.2"
+"gh:xTrayambak/nayland" = "#c36d2c95eb3539c63ed97201b7834d8d70b8b8da"
+chroma = ">= 1.0.0"
+
+[platforms.native]
+include = ["vterm", "fontconfig"]
+link = ["vterm", "fontconfig"]
