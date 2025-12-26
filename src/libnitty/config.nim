@@ -116,6 +116,8 @@ proc applyConfig*(terminal: Terminal, config: Config) {.raises: [PixieError].} =
     # HACK: Same as [2]
     terminal.font = readFont(&findUsableFont())
 
+  terminal.font.size = float32(config.font.size)
+
 proc loadConfig*(
     path: Option[string] = none(string)
 ): Config {.sideEffect, raises: [].} =
