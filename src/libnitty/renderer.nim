@@ -41,20 +41,14 @@ proc redrawCell(
   ctx.fillStyle = terminal.backgroundColor
   ctx.fillStyle.blendMode = OverwriteBlend
   ctx.fillRect(
-    rect(
-      vec2(x - (cellWidth - terminal.font.size), y - cellHeight),
-      vec2(cellWidth, cellHeight),
-    )
+    rect(vec2(x - (cellWidth - terminal.font.size), y), vec2(cellWidth, cellHeight))
   )
 
   # Then, if the cell's bg exists, draw it over the damaged area.
   ctx.fillStyle = terminal.toRGBA(cell.bg, terminal.palette, Usage.Background)
   ctx.fillStyle.blendMode = OverwriteBlend
   ctx.fillRect(
-    rect(
-      vec2(x - (cellWidth - terminal.font.size), y - cellHeight),
-      vec2(cellWidth, cellHeight),
-    )
+    rect(vec2(x - (cellWidth - terminal.font.size), y), vec2(cellWidth, cellHeight))
   )
 
   # Then, if there is any text content, draw it.
@@ -63,7 +57,8 @@ proc redrawCell(
   ctx.font = terminal.font.typeface.filePath
   ctx.fontSize = terminal.font.size
   ctx.fillText(
-    cast[string](cell.chars[0 ..< 6]), vec2(x - (cellWidth - terminal.font.size), y)
+    cast[string](cell.chars[0 ..< 6]),
+    vec2(x - (cellWidth - terminal.font.size), y + cellheight),
   )
 
 proc renderCursor*(terminal: Terminal, position, oldPosition: libvterm.VTermPos) =

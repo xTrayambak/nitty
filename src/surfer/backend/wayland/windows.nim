@@ -43,7 +43,7 @@ proc queueRedrawWayland*(app: App) =
   if app.pools.surface == nil:
     return
 
-  app.surfaces[0].attach(app.pools.surface, 0, -1)
+  app.surfaces[0].attach(app.pools.surface, 0, 0)
   app.surfaces[0].damage(0, 0, app.windowSize.x, app.windowSize.y)
   app.surfaces[0].commit()
 
