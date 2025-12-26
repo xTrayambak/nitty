@@ -44,8 +44,10 @@ proc queueRedrawWayland*(app: App) =
     return
 
   app.surfaces[0].attach(app.pools.surface, 0, 0)
-  app.surfaces[0].damage(0, 0, app.windowSize.x, app.windowSize.y)
   app.surfaces[0].commit()
+
+proc markWaylandDamaged*(app: App) =
+  app.surfaces[0].damage(0, 0, app.windowSize.x, app.windowSize.y)
 
 proc frameCallback(callback: Callback, app: pointer, data: uint32) {.cdecl.} =
   let app = cast[App](app)
