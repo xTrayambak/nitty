@@ -42,6 +42,10 @@ proc setTitle*(app: App, title: string) =
   when usingPlatform(Wayland):
     setWaylandTitle(app, title)
 
+proc markDamaged*(app: App) =
+  when usingPlatform(Wayland):
+    markWaylandDamaged(app)
+
 proc newApp*(title: string = "Surfer", appId: string = "xyz.xtrayambak.surfer"): App =
   App(title: title, appId: appId, ready: true)
 

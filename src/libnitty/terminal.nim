@@ -16,6 +16,7 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
       endCol = rect.endCol ]#
 
     let terminal = cast[Terminal](user)
+    terminal.app.markDamaged()
     terminal.damagedRects &= rect,
   moverect: proc(dest: VTermRect, src: VTermRect, user: pointer): int32 {.cdecl.} =
     let terminal = cast[Terminal](user)
