@@ -8,6 +8,9 @@ It uses `libvterm` for handling VT output and acting upon it.
 ![A screenshot of Nitty running htop](screenshots/htop.jpg)
 ![A screenshot of Nitty running Neovim](screenshots/nvim.jpg)
 
+# Support
+You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help with Nitty, or to follow its development.
+
 # Features
 - Runs most terminal apps fine (keyword: **most**)
   * In fact, this README was written entirely in Neovim running inside Nitty!
@@ -33,6 +36,10 @@ background = "#5050500A"
 
 [font]
 name = "JetBrains Mono"
+size = 24.0
+
+[user]
+shell = "zsh"
 ```
 
 # Building
