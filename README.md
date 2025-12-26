@@ -5,8 +5,8 @@ It was written in ~4 days and has ~900 lines of code (if you exclude the windowi
 
 It uses `libvterm` for handling VT output and acting upon it.
 
-[A screenshot of Nitty running htop](screenshots/htop.jpg)
-[A screenshot of Nitty running Neovim](screenshots/nvim.jpg)
+![A screenshot of Nitty running htop](screenshots/htop.jpg)
+![A screenshot of Nitty running Neovim](screenshots/nvim.jpg)
 
 # Features
 - Runs most terminal apps fine (keyword: **most**)
@@ -15,6 +15,7 @@ It uses `libvterm` for handling VT output and acting upon it.
 - Config file (`~/.config/nitty/config.toml`)
 - Ctrl+Plus and Ctrl+Minus to increase/decrease font size
 - **Okay** performance-wise, with room for optimizations.
+- Tab completions in shells work
 
 # Roadmap
 - [ ] Cursor rendering
