@@ -36,7 +36,7 @@ name = "JetBrains Mono"
 ```
 
 # Building
-Neo can be built using [Neo](https://github.com/xTrayambak/neo). After installing Neo, you can run the following command to compile Nitty:
+Nitty can be built using [Neo](https://github.com/xTrayambak/neo). After installing Neo, you can run the following command to compile Nitty:
 ```bash
 $ neo install
 ```
