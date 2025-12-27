@@ -1,3 +1,3 @@
-import ./[events, init, windows]
+import ./[events, init, input, windows]
 
-export events, init, windows
+export events, init, input, windows

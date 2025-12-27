@@ -33,6 +33,8 @@ type
     backgroundColor*: chroma.ColorRGBA
 
     cursorPos*: libvterm.VTermPos
+    cursorVisible*: bool
+
     rows*, cols*: int32
 
     shell*: string
@@ -44,3 +46,11 @@ func fullDamage*(terminal: Terminal) =
     VTermRect(
       startRow: 0, endRow: terminal.rows + 1, startCol: 0, endCol: terminal.cols + 1
     )
+
+func invalidateRow*(terminal: Terminal, start, stop: int32) =
+  terminal.damagedRects &=
+    VTermRect(startRow: start, endRow: stop, startCol: 0, endCol: terminal.cols + 1)
+
+func invalidateCol*(terminal: Terminal, start, stop: int32) =
+  terminal.damagedRects &=
+    VTermRect(startRow: 0, endRow: terminal.rows + 1, startCol: start, endCol: stop)

@@ -1,4 +1,4 @@
-import std/options
+import std/[monotimes, options]
 import platform
 import pkg/vmath
 
@@ -107,6 +107,9 @@ type
 
       nextWindowSize: Option[IVec2]
 
+      keyboardRepeatDelay: int32
+      keyboardRepeatRate: int32
+
     title, appId: string
     controlFlow*: ControlFlow
     queue: seq[Event]
@@ -115,7 +118,10 @@ type
 
     focused: bool
     closureRequested: bool
-    ready: bool
+
+    repeatedKey: Option[uint32]
+    repeaterStartTime: MonoTime
+    lastRepeatSignal: int64
 
   App* = ref AppObj
 

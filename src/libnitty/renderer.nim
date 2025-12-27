@@ -61,33 +61,26 @@ proc redrawCell(
     vec2(x - (cellWidth - terminal.font.size), y + cellheight),
   )
 
-proc renderCursor*(terminal: Terminal, position, oldPosition: libvterm.VTermPos) =
-  let ctx = newContext(terminal.buffer)
+proc renderCursor*(terminal: Terminal) =
   let
+    position = terminal.cursorPos
+    ctx = newContext(terminal.buffer)
+
     metrics = computeFontMetrics(terminal)
     cellWidth = metrics.cellWidth
     cellHeight = metrics.cellHeight
 
     x = (position.col).float32 * cellWidth
-    y = (position.row - 1).float32 * cellHeight
+    y = (position.row).float32 * cellHeight
 
-  ctx.fillStyle = bgra(255, 255, 255, 255)
-  ctx.fillRect(rect(vec2(x, y), vec2(cellWidth, cellHeight)))
+    # Super mathematically accurate formula to make sure
+    # the cursor is ahead of the text.
+    # SOURCE: I made it up (i didn't take maths for my last 2 years of school)
+    pushX = 2.5f * (cellWidth mod 4f)
 
-  var oldCell: VTermScreenCell
-  let
-    cellX = oldPosition.col.float32 * cellWidth
-    cellY = oldPosition.row.float32 * cellHeight
-
-  discard vterm_screen_get_cell(
-    terminal.vterm.screen,
-    VTermPos(row: oldPosition.row, col: oldPosition.col),
-    oldCell.addr,
-  )
-  redrawCell(terminal, ctx, oldCell, cellX, cellY, cellWidth, cellHeight)
-
-  echo "(" & $oldPosition.col & ", " & $oldPosition.row & ") -> (" & $position.col & ", " &
-    $position.row & ")"
+  if terminal.cursorVisible:
+    ctx.fillStyle = bgra(255, 255, 255, 255)
+    ctx.fillRect(rect(vec2(x + pushX, y), vec2(cellWidth / 8f, cellHeight)))
 
 proc processDamage*(terminal: Terminal) =
   if terminal.damagedRects.len < 1:

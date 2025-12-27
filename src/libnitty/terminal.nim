@@ -25,9 +25,10 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
   movecursor: proc(
       pos: VTermPos, oldpos: VTermPos, visible: int32, user: pointer
   ): int32 {.cdecl.} =
-    if pos.col == 0 or pos.row == 0:
-      return
-    discard, #renderCursor(cast[Terminal](user), pos, oldpos),
+    let terminal = cast[Terminal](user)
+    invalidateRow(terminal, oldpos.row, oldpos.row + 1)
+    invalidateRow(terminal, pos.row, pos.row + 1)
+    terminal.cursorPos = pos,
   settermprop: proc(
       prop: VTermProp, val: ptr VTermValue, user: pointer
   ): int32 {.cdecl.} =
@@ -40,6 +41,8 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
       let title = $val.string
       debug "Setting window title from callback", title = title
       terminal.app.setTitle(title)
+    of VTermProp.CursorVisible:
+      terminal.cursorVisible = val.boolean
     else:
       debug "Unhandled terminal property set-request, ignoring.", prop = prop
   ,
@@ -103,6 +106,8 @@ proc run*(terminal: Terminal) =
     case event.kind
     of EventKind.RedrawRequested:
       processDamage(terminal)
+      renderCursor(terminal)
+
       let stride = terminal.buffer.width * sizeof(ColorRGBX)
 
       for y in 0 ..< terminal.buffer.height:
@@ -135,6 +140,7 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
     buffer: newImage(680, 480),
     font: readFont(&findUsableFont(false)),
     palette: buildColorPalette(),
+    cursorVisible: true,
   )
   applyConfig(term, loadConfig())
   spawn(term)

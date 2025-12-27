@@ -21,7 +21,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - Tab completions in shells work
 
 # Roadmap
-- [ ] Cursor rendering
+- [X] Cursor rendering
 - [ ] Input improvements (repeat key events, mostly)
 - [ ] GPU acceleration via Boxy
 - [ ] Packaging for distros
