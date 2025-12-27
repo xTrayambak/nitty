@@ -151,6 +151,6 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
   term.app.initialize()
 
   debug "Creating window"
-  term.app.createWindow(ivec2(680, 480), Renderer.Software)
+  term.app.createWindow(ivec2(680, 480), Renderer.GLES)
 
   return term

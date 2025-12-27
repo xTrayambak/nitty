@@ -17,9 +17,9 @@ xkb = ">= 1.4.1"
 vmath = ">= 2.0.1"
 chronicles = ">= 0.12.3"
 parsetoml = ">= 0.7.2"
-"gh:xTrayambak/nayland" = "#c36d2c95eb3539c63ed97201b7834d8d70b8b8da"
+"gh:xTrayambak/nayland" = "#714cb0310382de9181b0cc4e8b5a94ed4635057c"
 chroma = ">= 1.0.0"
 
 [platforms.native]
-include = ["vterm", "fontconfig"]
-link = ["vterm", "fontconfig"]
+include = ["egl", "wayland-egl", "wayland-egl-backend", "vterm", "fontconfig"]
+link = ["egl", "wayland-egl", "wayland-egl-backend", "vterm", "fontconfig"]

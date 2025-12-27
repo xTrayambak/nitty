@@ -4,7 +4,7 @@
 import std/[importutils, options, posix]
 #!fmt: off
 import
-  pkg/nayland/types/display,
+  pkg/nayland/types/[egl, display],
   pkg/nayland/types/protocols/core/[buffer, callback, compositor, registry, shm, shm_pool, surface],
   pkg/nayland/types/protocols/xdg_shell/[wm_base, xdg_surface, xdg_toplevel]
 #!fmt: on
@@ -75,20 +75,24 @@ proc resizeWaylandWindow*(app: App, dimensions: IVec2) =
   app.windowSize = dimensions
   app.queue &= Event(kind: EventKind.WindowResized, windowSize: dimensions)
 
-  let oldSurfDest = app.pools.surfaceDest
-  let oldSurfPoolFd = app.pools.surfacePoolFd
-  let oldSurfPoolSize = app.pools.surfacePoolSize
-  let oldSurfaceBuffer = app.pools.surface
+  case app.renderer
+  of Renderer.Software:
+    let oldSurfDest = app.pools.surfaceDest
+    let oldSurfPoolFd = app.pools.surfacePoolFd
+    let oldSurfPoolSize = app.pools.surfacePoolSize
+    let oldSurfaceBuffer = app.pools.surface
 
-  oldSurfaceBuffer.onRelease = proc(buff: Buffer) =
-    discard posix.munmap(oldSurfDest, oldSurfPoolSize)
-    discard close(oldSurfPoolFd)
+    oldSurfaceBuffer.onRelease = proc(buff: Buffer) =
+      discard posix.munmap(oldSurfDest, oldSurfPoolSize)
+      discard close(oldSurfPoolFd)
 
-  attachCallbacks(oldSurfaceBuffer)
+    attachCallbacks(oldSurfaceBuffer)
 
-  allocateShmemPool(app, dimensions)
-  allocateSurfaceBuffer(app, dimensions)
-  queueRedrawWayland(app)
+    allocateShmemPool(app, dimensions)
+    allocateSurfaceBuffer(app, dimensions)
+    queueRedrawWayland(app)
+  of Renderer.GLES:
+    app.eglWindow.resize(dimensions.x, dimensions.y, 0'i32, 0'i32)
 
 proc createWaylandWindow*(app: App, dimensions: IVec2, renderer: Renderer) =
   # Firstly, we'll create a `wl_surface`.
@@ -139,7 +143,11 @@ proc createWaylandWindow*(app: App, dimensions: IVec2, renderer: Renderer) =
 
   surface.frame.listen(cast[ptr AppObj](app), frameCallback)
 
-  if renderer == Renderer.Software:
+  # Renderer-specific initialization
+
+  app.renderer = renderer
+  case renderer
+  of Renderer.Software:
     if app.pools.surfacePool == nil:
       allocateShmemPool(app, dimensions)
 
@@ -147,3 +155,5 @@ proc createWaylandWindow*(app: App, dimensions: IVec2, renderer: Renderer) =
     surface.attach(app.pools.surface, 0, 0)
     surface.damage(0, 0, dimensions.x, dimensions.y)
     surface.commit()
+  of Renderer.GLES:
+    app.eglWindow = createEGLWindow(surface, dimensions.x, dimensions.y)

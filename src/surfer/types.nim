@@ -7,7 +7,8 @@ when usingPlatform(Wayland):
     pkg/nayland/types/display,
     pkg/nayland/types/protocols/core/
       [buffer, compositor, keyboard, pointer, registry, shm, shm_pool, seat, surface],
-    pkg/nayland/types/protocols/xdg_shell/[wm_base, xdg_surface, xdg_toplevel]
+    pkg/nayland/types/protocols/xdg_shell/[wm_base, xdg_surface, xdg_toplevel],
+    pkg/nayland/types/egl
 
   import pkg/xkb
 
@@ -82,8 +83,7 @@ type
     ## On Wayland, if a software renderer is used, a
     ## `wl_buffer` will be allocated for drawing.
     Software = 0
-    OpenGL = 1
-    GLES = 2
+    GLES = 1
 
   AppObj* = object
     when usingPlatform(Wayland):
@@ -96,6 +96,7 @@ type
       wpointer*: Pointer
       shm*: Shm
       pools*: Pools
+      eglWindow*: EGLWindow
 
       surfaces*: seq[Surface]
       xdgSurfaces*: seq[XDGSurface]
@@ -122,6 +123,8 @@ type
     repeatedKey: Option[uint32]
     repeaterStartTime: MonoTime
     lastRepeatSignal: int64
+
+    renderer: Renderer
 
   App* = ref AppObj
 

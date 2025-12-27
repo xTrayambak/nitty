@@ -9,6 +9,7 @@ mkShell {
     wayland-scanner
     libvterm-neovim
     fontconfig
+    libGL
   ];
 
   LD_LIBRARY_PATH = lib.makeLibraryPath [
@@ -16,5 +17,6 @@ mkShell {
     libxkbcommon.dev
     libvterm-neovim
     fontconfig.dev
+    libGL.dev
   ];
 }
