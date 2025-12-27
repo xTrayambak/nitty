@@ -1,7 +1,7 @@
 ## Everything to do with input sources and events on Wayland
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/[importutils, posix]
+import std/[importutils, monotimes, options, posix, times]
 import
   pkg/nayland/bindings/protocols/core,
   pkg/nayland/types/protocols/core/[keyboard, pointer, surface],
@@ -60,9 +60,17 @@ proc initializeWaylandKeyboard(app: App) =
   ) =
     case KeyState(state)
     of KeyState.Released:
+      if *app.repeatedKey and &app.repeatedKey == key:
+        app.repeatedKey = none(uint32)
+        app.repeaterStartTime.reset()
+        app.lastRepeatSignal = 0'i64
+
       app.queue &=
         Event(kind: EventKind.KeyReleased, key: KeyEvent(code: key, time: time))
     of KeyState.Pressed:
+      app.repeatedKey = some(key)
+      app.repeaterStartTime = getMonoTime()
+
       app.queue &=
         Event(kind: EventKind.KeyPressed, key: KeyEvent(code: key, time: time))
     of KeyState.Repeated:
@@ -87,7 +95,24 @@ proc initializeWaylandKeyboard(app: App) =
     assert(rate > 0'i32)
     assert(delay > 0'i32)
 
+    app.keyboardRepeatRate = rate
+    app.keyboardRepeatDelay = delay
+
   app.keyboard.attachCallbacks()
+
+proc flushWaylandKeyboardEvents*(app: App) =
+  if !app.repeatedKey:
+    return
+
+  let elapsed = inMilliseconds(getMonoTime() - app.repeaterStartTime)
+
+  if elapsed < int64(app.keyboardRepeatDelay):
+    return
+
+  if elapsed >= app.lastRepeatSignal + int64(app.keyboardRepeatRate):
+    app.queue &=
+      Event(kind: EventKind.KeyRepeated, key: KeyEvent(code: &app.repeatedKey))
+    app.lastRepeatSignal = elapsed
 
 proc initializeWaylandInput*(app: App) =
   if hasKeyboard(app):

@@ -31,6 +31,7 @@ proc createWindow*(app: App, dimensions: vmath.IVec2, renderer: Renderer) =
 proc flushQueue*(app: App): Option[Event] =
   # echo "App::flushQueue()"
   when usingPlatform(Wayland):
+    flushWaylandKeyboardEvents(app)
     flushWaylandQueue(app)
 
 proc queueRedraw*(app: App) =
@@ -47,6 +48,6 @@ proc markDamaged*(app: App) =
     markWaylandDamaged(app)
 
 proc newApp*(title: string = "Surfer", appId: string = "xyz.xtrayambak.surfer"): App =
-  App(title: title, appId: appId, ready: true)
+  App(title: title, appId: appId)
 
 export types
