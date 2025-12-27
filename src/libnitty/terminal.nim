@@ -94,8 +94,6 @@ proc run*(terminal: Terminal) =
   for i in 0 ..< terminal.buffer.data.len:
     terminal.buffer.data[i] = bgra(80, 80, 80, 10)
 
-  terminal.hw.upload(readImage("thing.jpg"))
-
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
     if !eventOpt:
@@ -121,10 +119,8 @@ proc run*(terminal: Terminal) =
             addr terminal.buffer.data[y * terminal.buffer.width],
             stride,
           )
-      of Renderer.GLES:
-        terminal.hw.render()
-
-        discard eglSwapBuffers(terminal.app.eglDisplay, terminal.app.eglSurface)
+      else:
+        discard
 
       terminal.app.queueRedraw()
     of EventKind.KeyPressed, EventKind.KeyRepeated:
@@ -161,7 +157,7 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
   term.app.initialize()
 
   debug "Creating window"
-  term.app.createWindow(ivec2(680, 480), Renderer.GLES)
+  term.app.createWindow(ivec2(680, 480), Renderer.Software)
   term.hw.dimensions = ivec2(680, 480)
   term.hw.initialize()
 
