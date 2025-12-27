@@ -208,4 +208,6 @@ proc createWaylandWindow*(app: App, dimensions: IVec2, renderer: Renderer) =
   of Renderer.GLES:
     app.eglWindow = createEGLWindow(surface, dimensions.x, dimensions.y)
     initializeWaylandEGL(app)
+
+    surface.damage(0, 0, dimensions.x, dimensions.y)
     discard eglSwapBuffers(app.eglDisplay, app.eglSurface)

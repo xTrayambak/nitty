@@ -5,8 +5,8 @@ import std/[os, posix, importutils, tables, termios]
 import pkg/[vmath, shakar, chronicles, chroma, pixie, xkb]
 import ../surfer/app
 import bindings/libvterm
-import ../surfer/backend/wayland/bindings/gles2
-import ./[coloring, config, grid, input, pty, renderer, fonts, spawner, types]
+import ../surfer/backend/wayland/bindings/[gles2, egl]
+import ./[coloring, config, grid, hwrender, input, pty, renderer, fonts, spawner, types]
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
   damage: proc(rect: VTermRect, user: pointer): int32 {.cdecl.} =
@@ -94,6 +94,8 @@ proc run*(terminal: Terminal) =
   for i in 0 ..< terminal.buffer.data.len:
     terminal.buffer.data[i] = bgra(80, 80, 80, 10)
 
+  terminal.hw.upload(readImage("thing.jpg"))
+
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
     if !eventOpt:
@@ -120,8 +122,10 @@ proc run*(terminal: Terminal) =
             stride,
           )
       of Renderer.GLES:
-        glClearColor(0.5f, 0.5f, 0.0f, 1f)
-        glClear(GL_COLOR_BUFFER_BIT)
+        terminal.hw.render()
+
+        discard eglSwapBuffers(terminal.app.eglDisplay, terminal.app.eglSurface)
+
       terminal.app.queueRedraw()
     of EventKind.KeyPressed, EventKind.KeyRepeated:
       handleKeyInput(terminal, event.key.code)
@@ -158,5 +162,7 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
 
   debug "Creating window"
   term.app.createWindow(ivec2(680, 480), Renderer.GLES)
+  term.hw.dimensions = ivec2(680, 480)
+  term.hw.initialize()
 
   return term
