@@ -5,8 +5,7 @@ import std/[os, posix, importutils, tables, termios]
 import pkg/[vmath, shakar, chronicles, chroma, pixie, xkb]
 import ../surfer/app
 import bindings/libvterm
-import ../surfer/backend/wayland/bindings/[gles2, egl]
-import ./[coloring, config, grid, hwrender, input, pty, renderer, fonts, spawner, types]
+import ./[coloring, config, grid, input, pty, renderer, fonts, spawner, types]
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
   damage: proc(rect: VTermRect, user: pointer): int32 {.cdecl.} =
@@ -158,7 +157,5 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
 
   debug "Creating window"
   term.app.createWindow(ivec2(680, 480), Renderer.Software)
-  term.hw.dimensions = ivec2(680, 480)
-  term.hw.initialize()
 
   return term

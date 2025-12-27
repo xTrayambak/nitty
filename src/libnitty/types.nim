@@ -5,7 +5,7 @@ import std/[importutils]
 import pkg/[chroma, vmath, pixie]
 import bindings/libvterm
 import ../surfer/app
-import ./[coloring, hwrender]
+import ./[coloring]
 
 privateAccess(pixie.Typeface)
 
@@ -24,7 +24,6 @@ type
 
   TerminalObj* = object
     app*: App
-    hw*: ESRenderer
     vterm*: VTermObj
     palette*: ColorPalette
 
