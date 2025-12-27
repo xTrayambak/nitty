@@ -5,6 +5,7 @@ import std/[os, posix, importutils, tables, termios]
 import pkg/[vmath, shakar, chronicles, chroma, pixie, xkb]
 import ../surfer/app
 import bindings/libvterm
+import ../surfer/backend/wayland/bindings/gles2
 import ./[coloring, config, grid, input, pty, renderer, fonts, spawner, types]
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
@@ -105,17 +106,22 @@ proc run*(terminal: Terminal) =
     let event = &eventOpt
     case event.kind
     of EventKind.RedrawRequested:
-      processDamage(terminal)
-      renderCursor(terminal)
+      case terminal.app.renderer
+      of Renderer.Software:
+        processDamage(terminal)
+        renderCursor(terminal)
 
-      let stride = terminal.buffer.width * sizeof(ColorRGBX)
+        let stride = terminal.buffer.width * sizeof(ColorRGBX)
 
-      for y in 0 ..< terminal.buffer.height:
-        copyMem(
-          cast[pointer](cast[uint](terminal.app.pools.surfaceDest) + uint(y * stride)),
-          addr terminal.buffer.data[y * terminal.buffer.width],
-          stride,
-        )
+        for y in 0 ..< terminal.buffer.height:
+          copyMem(
+            cast[pointer](cast[uint](terminal.app.pools.surfaceDest) + uint(y * stride)),
+            addr terminal.buffer.data[y * terminal.buffer.width],
+            stride,
+          )
+      of Renderer.GLES:
+        glClearColor(0.5f, 0.5f, 0.0f, 1f)
+        glClear(GL_COLOR_BUFFER_BIT)
       terminal.app.queueRedraw()
     of EventKind.KeyPressed, EventKind.KeyRepeated:
       handleKeyInput(terminal, event.key.code)

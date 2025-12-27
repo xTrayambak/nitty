@@ -3,7 +3,7 @@
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import
   pkg/nayland/bindings/protocols/core,
-  pkg/nayland/bindings/display,
+  pkg/nayland/bindings/libwayland,
   pkg/nayland/bindings/egl/[core, backend]
 
 {.passC: "-DWL_EGL_PLATFORM".}
@@ -94,9 +94,9 @@ let
   EGL_NONE*: int32
   EGL_NON_CONFORMANT_CONFIG*: int32
   EGL_NOT_INITIALIZED*: int32
-  EGL_NO_CONTEXT*: int32
-  EGL_NO_DISPLAY*: int32
-  EGL_NO_SURFACE*: int32
+  EGL_NO_CONTEXT*: EGLContext
+  EGL_NO_DISPLAY*: EGLDisplay
+  EGL_NO_SURFACE*: EGLSurface
   EGL_PBUFFER_BIT*: int32
   EGL_PIXMAP_BIT*: int32
   EGL_READ*: int32
@@ -117,5 +117,41 @@ let
   EGL_VERSION*: int32
   EGL_WIDTH*: int32
   EGL_WINDOW_BIT*: int32
+  EGL_RENDERABLE_TYPE*: int32
+  EGL_OPENGL_ES2_BIT*: int32
+  EGL_CONTEXT_CLIENT_VERSION*: int32
+#define EGL_ALPHA_FORMAT                  0x3088
+#define EGL_ALPHA_FORMAT_NONPRE           0x308B
+#define EGL_ALPHA_FORMAT_PRE              0x308C
+#define EGL_ALPHA_MASK_SIZE               0x303E
+#define EGL_BUFFER_PRESERVED              0x3094
+#define EGL_BUFFER_DESTROYED              0x3095
+#define EGL_CLIENT_APIS                   0x308D
+#define EGL_COLORSPACE                    0x3087
+#define EGL_COLORSPACE_sRGB               0x3089
+#define EGL_COLORSPACE_LINEAR             0x308A
+#define EGL_COLOR_BUFFER_TYPE             0x303F
+#define EGL_CONTEXT_CLIENT_TYPE           0x3097
+#define EGL_DISPLAY_SCALING               10000
+#define EGL_HORIZONTAL_RESOLUTION         0x3090
+#define EGL_LUMINANCE_BUFFER              0x308F
+#define EGL_LUMINANCE_SIZE                0x303D
+#define EGL_OPENGL_ES_BIT                 0x0001
+#define EGL_OPENVG_BIT                    0x0002
+#define EGL_OPENGL_ES_API                 0x30A0
+#define EGL_OPENVG_API                    0x30A1
+#define EGL_OPENVG_IMAGE                  0x3096
+#define EGL_PIXEL_ASPECT_RATIO            0x3092
+#define EGL_RENDERABLE_TYPE               0x3040
+#define EGL_RENDER_BUFFER                 0x3086
+#define EGL_RGB_BUFFER                    0x308E
+#define EGL_SINGLE_BUFFER                 0x3085
+#define EGL_SWAP_BEHAVIOR                 0x3093
+#define EGL_UNKNOWN                       EGL_CAST(EGLint,-1)
+#define EGL_VERTICAL_RESOLUTION           0x3091
 {.pop.}
 {.pop.}
+
+func `==`*(a, b: EGLDisplay): bool {.borrow.}
+func `==`*(a, b: EGLSurface): bool {.borrow.}
+func `==`*(a, b: EGLContext): bool {.borrow.}

@@ -11,6 +11,7 @@ when usingPlatform(Wayland):
     pkg/nayland/types/egl
 
   import pkg/xkb
+  import backend/wayland/bindings/egl
 
 when usingPlatform(Wayland):
   type Pools* = object
@@ -96,7 +97,11 @@ type
       wpointer*: Pointer
       shm*: Shm
       pools*: Pools
+
       eglWindow*: EGLWindow
+      eglDisplay*: EGLDisplay
+      eglSurface*: EGLSurface
+      eglContext*: EGLContext
 
       surfaces*: seq[Surface]
       xdgSurfaces*: seq[XDGSurface]
@@ -124,12 +129,13 @@ type
     repeaterStartTime: MonoTime
     lastRepeatSignal: int64
 
-    renderer: Renderer
+    renderer*: Renderer
 
   App* = ref AppObj
 
 when usingPlatform(Wayland):
   type
+    EGLInitError* = object of AppInitError
     RequiresProtocol* = object of AppInitError
     CannotBindSingleton* = object of AppInitError
 

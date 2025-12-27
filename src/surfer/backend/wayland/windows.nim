@@ -9,8 +9,7 @@ import
   pkg/nayland/types/protocols/xdg_shell/[wm_base, xdg_surface, xdg_toplevel]
 #!fmt: on
 import pkg/[vmath, shakar]
-import allocator
-import ../../types
+import allocator, bindings/egl, ../../types
 
 privateAccess(types.App)
 
@@ -94,6 +93,57 @@ proc resizeWaylandWindow*(app: App, dimensions: IVec2) =
   of Renderer.GLES:
     app.eglWindow.resize(dimensions.x, dimensions.y, 0'i32, 0'i32)
 
+proc initializeWaylandEGL*(app: App) =
+  # Mostly based on https://gist.github.com/Miouyouyou/ca15af1c7f2696f66b0e013058f110b4
+  var
+    numConfigs: EGLint
+    majorVer, minorVer: EGLint
+    ctx: EGLContext
+    surface: EGLSurface
+    config: EGLConfig
+    #!fmt: off
+    fbAttribs = [
+      EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+      EGL_RED_SIZE, 8,
+      EGL_GREEN_SIZE, 8,
+      EGL_BLUE_SIZE, 8,
+      EGL_NONE
+    ]
+    contextAttribs = [
+      EGL_CONTEXT_CLIENT_VERSION, 2,
+      EGL_NONE, EGL_NONE
+    ]
+    #!fmt: off
+
+  when not defined(danger):
+    assert(sizeof(fbAttribs) mod 2 == 0)
+    assert(sizeof(contextAttribs) mod 2 == 0)
+
+  app.eglDisplay = eglGetDisplay(app.display.handle)
+  if app.eglDisplay == EGL_NO_DISPLAY:
+    raise newException(EGLInitError, "eglGetDisplay() returned EGL_NO_DISPLAY")
+
+  if not eglInitialize(app.eglDisplay, majorVer.addr, minorVer.addr):
+    raise newException(EGLInitError, "Failed to initialize EGL!")
+  
+  if (var numConfigs: EGLint; not eglGetConfigs(app.eglDisplay, nil, 0, numConfigs.addr) or numConfigs < 1):
+    raise newException(EGLInitError, "eglGetConfigs() has failed, or it returned zero configurations to choose from.")
+  
+  if (var numConfigs: EGLint; not eglChooseConfig(app.eglDisplay, fbAttribs[0].addr, config.addr, 1, numConfigs.addr) or numConfigs < 1):
+    raise newException(EGLInitError, "eglChooseConfig() has failed")
+
+  app.eglSurface = eglCreateWindowSurface(app.eglDisplay, config, app.eglWindow.handle, nil)
+  if app.eglSurface == EGL_NO_SURFACE:
+    raise newException(EGLInitError, "eglCreateWindowSurface() failed")
+
+  app.eglContext = eglCreateContext(app.eglDisplay, config, EGL_NO_CONTEXT, contextAttribs[0].addr)
+  if app.eglContext == EGL_NO_CONTEXT:
+    raise newException(EGLInitError, "eglCreateContext() failed")
+
+  if not eglMakeCurrent(app.eglDisplay, app.eglSurface, app.eglSurface, app.eglContext):
+    raise newException(EGLInitError, "eglMakeCurrent() failed")
+
 proc createWaylandWindow*(app: App, dimensions: IVec2, renderer: Renderer) =
   # Firstly, we'll create a `wl_surface`.
   # This is basically what we'll be blitting to.
@@ -157,3 +207,5 @@ proc createWaylandWindow*(app: App, dimensions: IVec2, renderer: Renderer) =
     surface.commit()
   of Renderer.GLES:
     app.eglWindow = createEGLWindow(surface, dimensions.x, dimensions.y)
+    initializeWaylandEGL(app)
+    discard eglSwapBuffers(app.eglDisplay, app.eglSurface)
