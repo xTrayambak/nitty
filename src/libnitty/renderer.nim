@@ -1,17 +1,22 @@
 ## Rendering code for the terminal
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/importutils
+import std/[importutils]
 import pkg/pixie
 import bindings/libvterm
 import ./[coloring, types]
 
 privateAccess(pixie.Typeface)
+privateAccess(pixie.Context)
 
-type FontMetrics* = object
-  scale*: float32
-  cellWidth*: float32
-  cellHeight*: float32
+type
+  FontMetrics* = object
+    scale*: float32
+    cellWidth*: float32
+    cellHeight*: float32
+
+  SWRenderer* = object
+    ctx*: pixie.Context
 
 proc clearScreen*(terminal: Terminal) =
   terminal.buffer.fill(bgra(80, 80, 80, 10))
@@ -33,10 +38,12 @@ func computeFontMetrics*(terminal: Terminal): FontMetrics =
 
 proc redrawCell(
     terminal: Terminal,
-    ctx: pixie.Context,
+    renderer: var SWRenderer,
     cell: libvterm.VTermScreenCell,
     x, y, cellWidth, cellHeight: float32,
 ) =
+  let ctx = renderer.ctx
+
   # First, overdraw the damaged area with the terminal's background color.
   ctx.fillStyle = terminal.backgroundColor
   ctx.fillStyle.blendMode = OverwriteBlend
@@ -82,7 +89,7 @@ proc renderCursor*(terminal: Terminal) =
     ctx.fillStyle = bgra(255, 255, 255, 255)
     ctx.fillRect(rect(vec2(x + pushX, y), vec2(cellWidth / 8f, cellHeight)))
 
-proc processDamage*(terminal: Terminal) =
+proc processDamage*(terminal: Terminal, renderer: var SWRenderer) =
   if terminal.damagedRects.len < 1:
     return
 
@@ -91,8 +98,6 @@ proc processDamage*(terminal: Terminal) =
     scale = metrics.scale
     cellWidth = metrics.cellWidth
     cellHeight = metrics.cellHeight
-
-  let ctx = newContext(terminal.buffer)
 
   while terminal.damagedRects.len > 0:
     let
@@ -111,7 +116,7 @@ proc processDamage*(terminal: Terminal) =
         terminal.vterm.screen, VTermPos(row: row, col: col), cell.addr
       )
 
-      redrawCell(terminal, ctx, cell, x, y, cellWidth, cellHeight)
+      redrawCell(terminal, renderer, cell, x, y, cellWidth, cellHeight)
     else:
       # Slow path: Multiple cells
       for col in col ..< rect.endCol:
@@ -125,4 +130,4 @@ proc processDamage*(terminal: Terminal) =
             terminal.vterm.screen, VTermPos(row: row, col: col), cell.addr
           )
 
-          redrawCell(terminal, ctx, ensureMove(cell), x, y, cellWidth, cellHeight)
+          redrawCell(terminal, renderer, ensureMove(cell), x, y, cellWidth, cellHeight)

@@ -93,6 +93,7 @@ proc run*(terminal: Terminal) =
   for i in 0 ..< terminal.buffer.data.len:
     terminal.buffer.data[i] = bgra(80, 80, 80, 10)
 
+  var renderCtx: SWRenderer
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
     if !eventOpt:
@@ -107,7 +108,7 @@ proc run*(terminal: Terminal) =
     of EventKind.RedrawRequested:
       case terminal.app.renderer
       of Renderer.Software:
-        processDamage(terminal)
+        processDamage(terminal, renderCtx)
         renderCursor(terminal)
 
         let stride = terminal.buffer.width * sizeof(ColorRGBX)
@@ -127,6 +128,7 @@ proc run*(terminal: Terminal) =
     of EventKind.WindowResized:
       # echo "Resize to " & $event.windowSize
       terminal.buffer = newImage(event.windowSize.x, event.windowSize.y)
+      renderCtx.ctx = newContext(terminal.buffer)
 
       # echo $cols & 'x' & $rows
       terminal.computeTermGrid(event.windowSize)
