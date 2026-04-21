@@ -1,7 +1,7 @@
 ## Utilities to work with the screen grid
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import ./[types, pty, renderer]
+import ./[types, pty, renderer, font_metrics]
 import bindings/libvterm
 import pkg/[pixie, vmath]
 
