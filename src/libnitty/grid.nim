@@ -1,9 +1,9 @@
 ## Utilities to work with the screen grid
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import ./[types, pty, renderer, font_metrics]
+import ./[types, pty, font_metrics]
 import bindings/libvterm
-import pkg/[pixie, vmath]
+import pkg/[pixie, vmath], pkg/surfer/types
 
 func computeTermGrid*(terminal: Terminal, windowSize: IVec2) =
   let
@@ -20,6 +20,7 @@ proc resize*(terminal: Terminal) =
   var ws = winsize(wsRow: uint16(terminal.rows), wsCol: uint16(terminal.cols))
   discard pty.ioctl(terminal.vterm.fds.master, TIOCSWINSZ, ws.addr)
 
-  # Tell the renderer to redraw all cells
-  terminal.buffer.fill(terminal.backgroundColor)
+  if terminal.app.renderer == Renderer.Software:
+    # Tell the renderer to redraw all cells
+    terminal.buffer.fill(terminal.backgroundColor)
   terminal.fullDamage()

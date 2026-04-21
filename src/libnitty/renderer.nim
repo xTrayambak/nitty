@@ -1,24 +1,27 @@
 ## Rendering code for the terminal
 ##
 ## Copyright (C) 2025-2026 Trayambak Rai (xtrayambak@disroot.org)
-import std/[importutils]
-import pkg/[shakar, pixie], pkg/surfer/types
-import bindings/libvterm
-import ./[coloring, types], ./swrender/core
+#!fmt: off
+import pkg/surfer/types
+import ./[types],
+       swrender/core,
+       hwrender/core
+#!fmt: on
 
-export SWRenderer
+export SWRenderer # CPU renderer
+export HWRenderer, initHWRenderer, renderTerminal # GPU renderer
 
 {.push inline.}
 proc clearScreen*(terminal: Terminal) =
   if terminal.app.renderer == Renderer.Software:
     clearSWScreen(terminal)
   else:
-    unreachable
+    discard
 
 proc processDamage*(terminal: Terminal, swCtx: var SWRenderer) =
   if terminal.app.renderer == Renderer.Software:
     processSWDamage(terminal, swCtx)
   else:
-    unreachable
+    discard
 
 {.pop.}

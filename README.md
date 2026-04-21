@@ -1,7 +1,7 @@
 # nitty
 
 Nitty is a fast terminal emulator written in Nim.
-It was originally written in ~4 days and has ~900 lines of code.
+It was originally written in ~4 days and has ~1000 lines of code.
 
 It uses its GPU-accelerated renderer by default, but can optionally use the CPU-based renderer (sluggish!) if push comes to shove (the push in this case being `NITTY_RENDERER=sw|hw` :P)
 
@@ -23,9 +23,11 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - Tab completions in shells work
 
 # Roadmap
-- [X] Cursor rendering
-- [ ] Input improvements (repeat key events, mostly)
+- [ ] Cursor rendering
+- [X] Input improvements (repeat key events, mostly)
 - [X] GPU acceleration via NanoVG
+- [ ] Scrollback using scroll wheel
+- [ ] Fractional scaling
 - [ ] Packaging for distros
 
 # Config

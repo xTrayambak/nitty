@@ -1,7 +1,6 @@
 ## CPU-based renderer implementation for Nitty
 ##
 ## Copyright (C) 2025-2026 Trayambak Rai (xtrayambak@disroot.org)
-import std/importutils
 import pkg/pixie
 import ../[coloring, font_metrics, types], ../bindings/libvterm
 
@@ -68,7 +67,6 @@ proc processSWDamage*(terminal: Terminal, renderer: var SWRenderer) =
 
   let
     metrics = computeFontMetrics(terminal)
-    scale = metrics.scale
     cellWidth = metrics.cellWidth
     cellHeight = metrics.cellHeight
 

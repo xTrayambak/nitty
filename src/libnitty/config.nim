@@ -38,7 +38,7 @@ const
   ## The default configuration that Nitty uses, if the user's config
   ## either doesn't exist, or is malformed.
   DefaultConfig = Config(
-    appearance: AppearanceConfig(background: "5050500A"),
+    appearance: AppearanceConfig(background: "2222220A"),
     font: FontConfig(size: 24f),
     user: UserConfig(shell: "sh"),
   )
@@ -103,7 +103,7 @@ proc applyConfig*(terminal: Terminal, config: Config) {.raises: [PixieError].} =
       terminal.backgroundColor = bgra(chroma.parseHex(backgroundHex).rgba)
     else:
       invalidBackgroundColor()
-  except chroma.InvalidColor as exc:
+  except chroma.InvalidColor:
     invalidBackgroundColor()
 
   # Load user-specified font, if specified.
