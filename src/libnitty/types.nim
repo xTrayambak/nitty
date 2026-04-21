@@ -4,7 +4,7 @@
 import std/[importutils]
 import pkg/[chroma, vmath, pixie]
 import bindings/libvterm
-import ../surfer/app
+import pkg/surfer/app
 import ./[coloring]
 
 privateAccess(pixie.Typeface)

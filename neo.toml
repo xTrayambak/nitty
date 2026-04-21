@@ -17,7 +17,7 @@ xkb = ">= 1.4.1"
 vmath = ">= 2.0.1"
 chronicles = ">= 0.12.3"
 parsetoml = ">= 0.7.2"
-"gh:xTrayambak/nayland" = "#714cb0310382de9181b0cc4e8b5a94ed4635057c"
+surfer = ">= 0.1.21"
 chroma = ">= 1.0.0"
 
 [platforms.native]

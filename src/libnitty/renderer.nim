@@ -42,28 +42,26 @@ proc redrawCell(
     cell: libvterm.VTermScreenCell,
     x, y, cellWidth, cellHeight: float32,
 ) =
-  let ctx = renderer.ctx
-
   # First, overdraw the damaged area with the terminal's background color.
-  ctx.fillStyle = terminal.backgroundColor
-  ctx.fillStyle.blendMode = OverwriteBlend
-  ctx.fillRect(
+  renderer.ctx.fillStyle = terminal.backgroundColor
+  renderer.ctx.fillStyle.blendMode = OverwriteBlend
+  renderer.ctx.fillRect(
     rect(vec2(x - (cellWidth - terminal.font.size), y), vec2(cellWidth, cellHeight))
   )
 
   # Then, if the cell's bg exists, draw it over the damaged area.
-  ctx.fillStyle = terminal.toRGBA(cell.bg, terminal.palette, Usage.Background)
-  ctx.fillStyle.blendMode = OverwriteBlend
-  ctx.fillRect(
+  renderer.ctx.fillStyle = terminal.toRGBA(cell.bg, terminal.palette, Usage.Background)
+  renderer.ctx.fillStyle.blendMode = OverwriteBlend
+  renderer.ctx.fillRect(
     rect(vec2(x - (cellWidth - terminal.font.size), y), vec2(cellWidth, cellHeight))
   )
 
   # Then, if there is any text content, draw it.
-  ctx.fillStyle = terminal.toRGBA(cell.fg, terminal.palette, Usage.Foreground)
-  ctx.fillStyle.blendMode = OverwriteBlend
-  ctx.font = terminal.font.typeface.filePath
-  ctx.fontSize = terminal.font.size
-  ctx.fillText(
+  renderer.ctx.fillStyle = terminal.toRGBA(cell.fg, terminal.palette, Usage.Foreground)
+  renderer.ctx.fillStyle.blendMode = OverwriteBlend
+  renderer.ctx.font = terminal.font.typeface.filePath
+  renderer.ctx.fontSize = terminal.font.size
+  renderer.ctx.fillText(
     cast[string](cell.chars[0 ..< 6]),
     vec2(x - (cellWidth - terminal.font.size), y + cellheight),
   )

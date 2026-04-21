@@ -3,7 +3,7 @@
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import std/[os, posix, importutils, tables, termios]
 import pkg/[vmath, shakar, chronicles, chroma, pixie, xkb]
-import ../surfer/app
+import pkg/surfer/app
 import bindings/libvterm
 import ./[coloring, config, grid, input, pty, renderer, fonts, spawner, types]
 
@@ -94,6 +94,8 @@ proc run*(terminal: Terminal) =
     terminal.buffer.data[i] = bgra(80, 80, 80, 10)
 
   var renderCtx: SWRenderer
+  renderCtx.ctx = newContext(terminal.buffer)
+
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
     if !eventOpt:
@@ -109,7 +111,7 @@ proc run*(terminal: Terminal) =
       case terminal.app.renderer
       of Renderer.Software:
         processDamage(terminal, renderCtx)
-        renderCursor(terminal)
+        # renderCursor(terminal)
 
         let stride = terminal.buffer.width * sizeof(ColorRGBX)
 

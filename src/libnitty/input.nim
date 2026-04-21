@@ -5,7 +5,7 @@ import std/tables
 import pkg/xkb
 import bindings/libvterm
 import ./[grid, types]
-import ../surfer/app
+import pkg/surfer/app
 
 const SpecialKeysyms = {
   XKB_Key_Return: VTermKey.Enter,
