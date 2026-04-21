@@ -51,8 +51,10 @@ proc renderTerminal*(hw: var HWRenderer) =
   glClear(GL_COLOR_BUFFER_BIT)
 
   hw.ctx.beginFrame(
-    float32(hw.terminal.app.windowSize.x), float32(hw.terminal.app.windowSize.y), 1.0f
-  ) # TODO: Use the PreferredRenderScale event!
+    float32(hw.terminal.app.windowSize.x),
+    float32(hw.terminal.app.windowSize.y),
+    hw.terminal.preferredRenderScale,
+  )
 
   hw.ctx.beginPath()
   hw.ctx.fillColor(toNVG(hw.terminal.backgroundColor))

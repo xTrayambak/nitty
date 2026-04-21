@@ -38,6 +38,8 @@ type
 
     shell*: string
 
+    preferredRenderScale*: float32
+
   Terminal* = ref TerminalObj
 
 func fullDamage*(terminal: Terminal) =

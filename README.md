@@ -27,7 +27,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - [X] Input improvements (repeat key events, mostly)
 - [X] GPU acceleration via NanoVG
 - [ ] Scrollback using scroll wheel
-- [ ] Fractional scaling
+- [X] Fractional scaling
 - [ ] Packaging for distros
 
 # Config

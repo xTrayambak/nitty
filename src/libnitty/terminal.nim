@@ -143,17 +143,24 @@ proc run*(terminal: Terminal) =
       # echo $cols & 'x' & $rows
       terminal.computeTermGrid(event.windowSize)
       terminal.resize()
+    of EventKind.PreferredRenderScale:
+      terminal.preferredRenderScale = float32(event.preferredScale) / 120'f32
+      info "Got preferred rendering scale", scale = terminal.preferredRenderScale
     else:
       discard
 
-  debug "The event loop has stopped. Alvida."
+  info "The event loop has stopped. Alvida."
   discard close(terminal.vterm.fds.master)
 
 proc createTerminal*(title: string = "Nitty"): Terminal =
   debug "Initializing terminal emulator"
   discard initFontConfig()
 
-  var term = Terminal(font: readFont(&findUsableFont(false)), cursorVisible: true)
+  var term = Terminal(
+    font: readFont(&findUsableFont(false)),
+    cursorVisible: true,
+    preferredRenderScale: 1.0f,
+  )
   applyConfig(term, loadConfig())
   spawn(term)
 
