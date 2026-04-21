@@ -2,10 +2,9 @@
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import std/[importutils]
-import pkg/[chroma, vmath, pixie]
+import pkg/[chroma, pixie]
 import bindings/libvterm
 import pkg/surfer/app
-import ./[coloring]
 
 privateAccess(pixie.Typeface)
 
@@ -38,6 +37,8 @@ type
     rows*, cols*: int32
 
     shell*: string
+
+    preferredRenderScale*: float32
 
   Terminal* = ref TerminalObj
 

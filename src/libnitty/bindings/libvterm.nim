@@ -209,6 +209,7 @@ proc vterm_screen_get_cell*(
 ): int32
 
 proc vterm_set_size*(vt: ptr VTerm, rows, cols: int32)
+proc vterm_get_size*(vt: ptr VTerm, rows, cols: ptr int32)
 
 proc vterm_screen_get_text*(
   vts: ptr VTermScreen, str: ptr char, length: uint64, rect: VTermRect

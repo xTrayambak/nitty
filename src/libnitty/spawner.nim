@@ -59,7 +59,7 @@ proc spawn*(terminal: Terminal) =
     putEnv("COLORTERM", "truecolor")
     putEnv("SHELL", shell)
 
-    discard posix.execlp(shell, terminal.shell, nil)
+    discard posix.execlp(cstring(shell), cstring(terminal.shell), nil)
     quit(QuitSuccess)
   else:
     debug "We're the main process, continuing initialization", pid = pid

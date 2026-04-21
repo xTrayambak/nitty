@@ -1,11 +1,11 @@
 ## Base routines for the Nitty terminal emulator
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/[os, posix, importutils, tables, termios]
-import pkg/[vmath, shakar, chronicles, chroma, pixie, xkb]
+import std/[os, posix, strutils]
+import pkg/[vmath, shakar, chronicles, chroma, pixie]
 import pkg/surfer/app
 import bindings/libvterm
-import ./[coloring, config, grid, input, pty, renderer, fonts, spawner, types]
+import ./[coloring, config, grid, input, renderer, fonts, spawner, types]
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
   damage: proc(rect: VTermRect, user: pointer): int32 {.cdecl.} =
@@ -90,11 +90,18 @@ proc initializeBackend*(terminal: Terminal) =
   )
 
 proc run*(terminal: Terminal) =
-  for i in 0 ..< terminal.buffer.data.len:
-    terminal.buffer.data[i] = bgra(80, 80, 80, 10)
+  var
+    swRenderer: SWRenderer
+    hwRenderer: HWRenderer
 
-  var renderCtx: SWRenderer
-  renderCtx.ctx = newContext(terminal.buffer)
+  case terminal.app.renderer
+  of Renderer.Software:
+    swRenderer.ctx = newContext(terminal.buffer)
+
+    for i in 0 ..< terminal.buffer.data.len:
+      terminal.buffer.data[i] = bgra(80, 80, 80, 10)
+  of Renderer.GLES:
+    hwRenderer = initHWRenderer(terminal)
 
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
@@ -110,7 +117,7 @@ proc run*(terminal: Terminal) =
     of EventKind.RedrawRequested:
       case terminal.app.renderer
       of Renderer.Software:
-        processDamage(terminal, renderCtx)
+        processDamage(terminal, swRenderer)
         # renderCursor(terminal)
 
         let stride = terminal.buffer.width * sizeof(ColorRGBX)
@@ -121,24 +128,28 @@ proc run*(terminal: Terminal) =
             addr terminal.buffer.data[y * terminal.buffer.width],
             stride,
           )
-      else:
-        discard
+      of Renderer.GLES:
+        renderTerminal(hwRenderer)
 
       terminal.app.queueRedraw()
     of EventKind.KeyPressed, EventKind.KeyRepeated:
       handleKeyInput(terminal, event.key.code)
     of EventKind.WindowResized:
       # echo "Resize to " & $event.windowSize
-      terminal.buffer = newImage(event.windowSize.x, event.windowSize.y)
-      renderCtx.ctx = newContext(terminal.buffer)
+      if terminal.app.renderer == Renderer.Software:
+        terminal.buffer = newImage(event.windowSize.x, event.windowSize.y)
+        swRenderer.ctx = newContext(terminal.buffer)
 
       # echo $cols & 'x' & $rows
       terminal.computeTermGrid(event.windowSize)
       terminal.resize()
+    of EventKind.PreferredRenderScale:
+      terminal.preferredRenderScale = float32(event.preferredScale) / 120'f32
+      info "Got preferred rendering scale", scale = terminal.preferredRenderScale
     else:
       discard
 
-  debug "The event loop has stopped. Alvida."
+  info "The event loop has stopped. Alvida."
   discard close(terminal.vterm.fds.master)
 
 proc createTerminal*(title: string = "Nitty"): Terminal =
@@ -146,20 +157,35 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
   discard initFontConfig()
 
   var term = Terminal(
-    buffer: newImage(680, 480),
     font: readFont(&findUsableFont(false)),
-    palette: buildColorPalette(),
     cursorVisible: true,
+    preferredRenderScale: 1.0f,
   )
   applyConfig(term, loadConfig())
   spawn(term)
 
   debug "Initializing surfer app"
   term.app = newApp(title, appId = "xyz.xtrayambak.nitty")
-  term.app.controlFlow = ControlFlow.Wait
+  term.app.controlFlow =
+    if getEnv("NITTY_LOOP_METHOD", "wait").toLowerAscii() == "async":
+      ControlFlow.Async
+    else:
+      ControlFlow.Wait
   term.app.initialize()
 
   debug "Creating window"
-  term.app.createWindow(ivec2(680, 480), Renderer.Software)
+  let renderer =
+    if getEnv("NITTY_RENDERER", "hw").toLowerAscii() == "sw":
+      Renderer.Software
+    else:
+      Renderer.GLES
+
+  term.app.createWindow(ivec2(680, 480), renderer)
+  case renderer
+  of Renderer.Software:
+    term.buffer = newImage(680, 480)
+    term.palette = buildSWColorPalette()
+  of Renderer.GLES:
+    term.palette = buildHWColorPalette()
 
   return term

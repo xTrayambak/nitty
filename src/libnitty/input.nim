@@ -53,7 +53,6 @@ proc handleKeyInput*(terminal: Terminal, keycode: uint32) =
   # We need to forward the keycode to libvterm.
   let keycode = XkbKeyCode(keycode + 8)
   let keysym = terminal.app.xkbState.getOneSym(keycode)
-  let key32 = terminal.app.xkbState.getUtf32(keycode)
 
   var modifier: VTermModifier
   if terminal.app.xkbState.modNameIsActive(

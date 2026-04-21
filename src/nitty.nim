@@ -1,6 +1,4 @@
-import surfer/app
 import libnitty/terminal
-import pkg/[vmath, shakar, chroma, pixie]
 
 proc main() {.inline.} =
   let term = createTerminal()
