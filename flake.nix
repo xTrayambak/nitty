@@ -4,6 +4,7 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    nim2nix.url = "github:daylinmorgan/nim2nix";
   };
 
   outputs =
@@ -11,14 +12,18 @@
       self,
       nixpkgs,
       flake-utils,
+      nim2nix,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
-        pkgs = import nixpkgs { inherit system; };
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = [ nim2nix.overlays.default ];
+        };
       in
       {
-        packages.default = pkgs.buildNimPackage {
+        packages.default = pkgs.buildNimblePackage {
           pname = "nitty";
           version = "0.1.0";
           src = ./.;
@@ -35,6 +40,9 @@
             pkg-config
           ];
 
+          nimbleLockFile = ./nimble.lock;
+          nimbleDepsHash = "sha256-9Kuh3MzsTgSqE+CEPZZl+31PJM+ezYZVvQBPVushpRE=";
+
           nimFlags = [
             "--define:release"
             "--opt:speed"
@@ -46,6 +54,8 @@
             platforms = platforms.linux;
             license = licenses.bsd3;
           };
+
+          doCheck = false;
         };
 
         devShells.default = pkgs.mkShell {
