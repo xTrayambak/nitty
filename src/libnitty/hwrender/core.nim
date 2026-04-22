@@ -1,6 +1,7 @@
 ## GPU-based renderer implementation for Nitty, using NanoVG.
 ##
 ## Copyright (C) 2026 Trayambak Rai (xtrayambak@disroot.org)
+import std/[math, monotimes, times]
 import
   pkg/[chroma, nanovg, pixie, vmath],
   pkg/nanovg/wrapper,
@@ -11,6 +12,9 @@ import ../[coloring, font_metrics, types], ../bindings/libvterm
 type HWRenderer* = object
   terminal*: Terminal
   ctx*: nanovg.NVGContext
+
+  lastFPSMeterDrawTime: MonoTime
+  trackedFps: float32
 
   font: FontMetrics
 
@@ -78,6 +82,18 @@ proc renderTerminal*(hw: var HWRenderer) =
       )
 
       renderCell(hw, ensureMove(cell), x, y, hw.font.cellWidth, hw.font.cellHeight)
+
+  let ctime = getMonoTime()
+  if inMilliseconds(ctime - hw.lastFPSMeterDrawTime) >= 500:
+    hw.trackedFps = hw.terminal.fps
+    hw.lastFPSMeterDrawTime = ctime
+
+  # Performance stats
+  hw.ctx.beginPath()
+  hw.ctx.fontSize(24)
+  hw.ctx.fontFace("main")
+  hw.ctx.fillColor(rgb(0, 255, 0))
+  discard hw.ctx.text(16, 32, $int(hw.trackedFps), nil)
 
   hw.ctx.endFrame()
 

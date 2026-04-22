@@ -19,6 +19,8 @@ type
 
   UserConfig = object
     shell*: string ## The shell that is to be used. Defaults to `sh`.
+    bell*: bool
+      ## If the bell escape code is encountered, should Nitty attempt to ring the system bell?
 
   Config* = object
     appearance*: AppearanceConfig
@@ -34,13 +36,14 @@ const
   NameAttrKey = "name"
   SizeAttrKey = "size"
   ShellAttrKey = "shell"
+  BellAttrKey = "bell"
 
   ## The default configuration that Nitty uses, if the user's config
   ## either doesn't exist, or is malformed.
   DefaultConfig = Config(
     appearance: AppearanceConfig(background: "2222220A"),
     font: FontConfig(size: 24f),
-    user: UserConfig(shell: "sh"),
+    user: UserConfig(shell: "sh", bell: true),
   )
 
 proc readConfig*(src: string): Option[Config] =
@@ -69,6 +72,8 @@ proc readConfig*(src: string): Option[Config] =
 
       config.user.shell =
         userTable[ShellAttrKey].getStr(default = DefaultConfig.user.shell)
+      config.user.bell =
+        userTable[BellAttrKey].getBool(default = DefaultConfig.user.bell)
 
     return some(ensureMove(config))
   except parsetoml.TomlError as exc:
@@ -136,6 +141,9 @@ proc applyConfig*(terminal: Terminal, config: Config) {.raises: [PixieError].} =
 
   # Shell
   terminal.shell = config.user.shell
+
+  # Bell
+  terminal.useBell = config.user.bell
 
 proc loadConfig*(
     path: Option[string] = none(string)

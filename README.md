@@ -28,6 +28,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - [X] GPU acceleration via NanoVG
 - [ ] Scrollback using scroll wheel
 - [X] Fractional scaling
+- [X] Bell
 - [ ] Packaging for distros
 
 # Config
@@ -43,6 +44,7 @@ size = 24.0
 
 [user]
 shell = "zsh"
+bell = true
 ```
 
 # Building

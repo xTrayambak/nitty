@@ -1,7 +1,7 @@
 ## Base routines for the Nitty terminal emulator
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/[os, posix, strutils]
+import std/[monotimes, os, posix, strutils, times]
 import pkg/[vmath, shakar, chronicles, chroma, pixie]
 import pkg/surfer/app
 import bindings/libvterm
@@ -55,7 +55,12 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
       debug "Unhandled terminal property set-request, ignoring.", prop = prop
   ,
   bell: proc(user: pointer): int32 {.cdecl.} =
-    discard # echo "bell"
+    let terminal = cast[Terminal](user)
+    if terminal.useBell:
+      debug "Ring system bell"
+      ringSystemBell(terminal.app)
+    else:
+      debug "Got bell op, ignoring."
   ,
   resize: proc(rows: int32, cols: int32, user: pointer): int32 {.cdecl.} =
     discard # echo "resize"
@@ -146,6 +151,12 @@ proc run*(terminal: Terminal) =
       of Renderer.GLES:
         renderTerminal(hwRenderer)
 
+      let currentTime = getMonoTime()
+
+      terminal.fps =
+        1000'f32 / float32(inMilliseconds(currentTime - terminal.lastRenderTime))
+
+      terminal.lastRenderTime = currentTime
       terminal.app.queueRedraw()
     of EventKind.KeyPressed, EventKind.KeyRepeated:
       handleKeyInput(terminal, event.key.code)

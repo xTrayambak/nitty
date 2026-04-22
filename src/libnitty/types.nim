@@ -1,7 +1,7 @@
 ## Types for libnitty
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/[importutils]
+import std/[importutils, monotimes]
 import pkg/[chroma, pixie]
 import bindings/libvterm
 import pkg/surfer/app
@@ -37,8 +37,11 @@ type
     rows*, cols*: int32
 
     shell*: string
+    useBell*: bool
 
     preferredRenderScale*: float32
+    lastRenderTime*: MonoTime
+    fps*: float32
 
   Terminal* = ref TerminalObj
 
