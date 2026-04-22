@@ -51,7 +51,13 @@ bell = true
 ```
 
 # Building
+## Nix
+Nitty provides a Nix flake. Simply add `github:xTrayambak/nitty` as an input, and add `inputs.nitty.packages.${pkgs.system}.default` to `home.packages`.
+
+## Source Build
 Nitty can be built using [Neo](https://github.com/xTrayambak/neo). After installing Neo, you can run the following command to compile Nitty:
 ```bash
 $ neo install
 ```
+
+

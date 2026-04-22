@@ -64,6 +64,7 @@
             ++ (with pkgs; [
               nim
               nimble
+              pkg-config
             ]);
         };
       }
