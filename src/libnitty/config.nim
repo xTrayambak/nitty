@@ -96,16 +96,16 @@ proc applyConfig*(terminal: Terminal, config: Config) {.raises: [PixieError].} =
 
     {.cast(raises: []).}:
       terminal.backgroundColor =
-        bgra(chroma.parseHexAlpha(DefaultConfig.appearance.background).rgba)
+        rgba(chroma.parseHexAlpha(DefaultConfig.appearance.background))
 
   try:
     case backgroundHex.len
     of 8:
       # RRGGBBAA
-      terminal.backgroundColor = bgra(chroma.parseHexAlpha(backgroundHex).rgba)
+      terminal.backgroundColor = rgba(chroma.parseHexAlpha(backgroundHex))
     of 6:
       # RRGGBB
-      terminal.backgroundColor = bgra(chroma.parseHex(backgroundHex).rgba)
+      terminal.backgroundColor = rgba(chroma.parseHex(backgroundHex))
     else:
       invalidBackgroundColor()
   except chroma.InvalidColor:

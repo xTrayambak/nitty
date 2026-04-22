@@ -20,7 +20,4 @@ proc resize*(terminal: Terminal) =
   var ws = winsize(wsRow: uint16(terminal.rows), wsCol: uint16(terminal.cols))
   discard pty.ioctl(terminal.vterm.fds.master, TIOCSWINSZ, ws.addr)
 
-  if terminal.app.renderer == Renderer.Software:
-    # Tell the renderer to redraw all cells
-    terminal.buffer.fill(terminal.backgroundColor)
   terminal.fullDamage()

@@ -8,35 +8,6 @@ import bindings/libvterm
 import ./[coloring, config, grid, input, renderer, fonts, spawner, types]
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
-  damage: proc(rect: VTermRect, user: pointer): int32 {.cdecl.} =
-    #[ debug "Received damaged area",
-      startRow = rect.startRow,
-      endRow = rect.endRow,
-      startCol = rect.startCol,
-      endCol = rect.endCol ]#
-
-    let terminal = cast[Terminal](user)
-    if terminal.app.renderer == Renderer.Software:
-      terminal.app.markDamaged()
-      terminal.damagedRects &= rect
-  ,
-  moverect: proc(dest: VTermRect, src: VTermRect, user: pointer): int32 {.cdecl.} =
-    let terminal = cast[Terminal](user)
-    if terminal.app.renderer != Renderer.Software:
-      return
-
-    terminal.damagedRects &= dest
-    terminal.damagedRects &= src,
-  movecursor: proc(
-      pos: VTermPos, oldpos: VTermPos, visible: int32, user: pointer
-  ): int32 {.cdecl.} =
-    let terminal = cast[Terminal](user)
-    if terminal.app.renderer != Renderer.Software:
-      return
-
-    invalidateRow(terminal, oldpos.row, oldpos.row + 1)
-    invalidateRow(terminal, pos.row, pos.row + 1)
-    terminal.cursorPos = pos,
   settermprop: proc(
       prop: VTermProp, val: ptr VTermValue, user: pointer
   ): int32 {.cdecl.} =
@@ -75,10 +46,6 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
   ): int32 {.cdecl.} =
     discard # echo "sb_popline"
   ,
-  sb_clear: proc(user: pointer): int32 {.cdecl.} =
-    debug "Clear screen"
-    let terminal = cast[Terminal](user)
-    clearScreen(terminal),
 )
 
 proc initializeBackend*(terminal: Terminal) =
@@ -105,24 +72,8 @@ proc initializeBackend*(terminal: Terminal) =
     cast[ptr TerminalObj](terminal),
   )
 
-proc initializeRendering(
-    terminal: Terminal, swRenderer: var SWRenderer, hwRenderer: var HWRenderer
-) =
-  case terminal.app.renderer
-  of Renderer.Software:
-    swRenderer.ctx = newContext(terminal.buffer)
-
-    for i in 0 ..< terminal.buffer.data.len:
-      terminal.buffer.data[i] = bgra(80, 80, 80, 10)
-  of Renderer.GLES:
-    hwRenderer = initHWRenderer(terminal)
-
 proc run*(terminal: Terminal) =
-  var
-    swRenderer: SWRenderer
-    hwRenderer: HWRenderer
-
-  initializeRendering(terminal, swRenderer, hwRenderer)
+  var hwRenderer = initHWRenderer(terminal)
 
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
@@ -137,22 +88,7 @@ proc run*(terminal: Terminal) =
     let event = &eventOpt
     case event.kind
     of EventKind.RedrawRequested:
-      case terminal.app.renderer
-      of Renderer.Software:
-        processDamage(terminal, swRenderer)
-        # renderSWCursor(terminal)
-
-        let stride = terminal.buffer.width * sizeof(ColorRGBX)
-
-        for y in 0 ..< terminal.buffer.height:
-          copyMem(
-            cast[pointer](cast[uint](terminal.app.pools.surfaceDest) + uint(y * stride)),
-            addr terminal.buffer.data[y * terminal.buffer.width],
-            stride,
-          )
-      of Renderer.GLES:
-        renderTerminal(hwRenderer)
-
+      renderTerminal(hwRenderer)
       let currentTime = getMonoTime()
 
       terminal.fps =
@@ -163,12 +99,6 @@ proc run*(terminal: Terminal) =
     of EventKind.KeyPressed, EventKind.KeyRepeated:
       handleKeyInput(terminal, event.key.code)
     of EventKind.WindowResized:
-      # echo "Resize to " & $event.windowSize
-      if terminal.app.renderer == Renderer.Software:
-        terminal.buffer = newImage(event.windowSize.x, event.windowSize.y)
-        swRenderer.ctx = newContext(terminal.buffer)
-
-      # echo $cols & 'x' & $rows
       terminal.computeTermGrid(event.windowSize)
       terminal.resize()
     of EventKind.PreferredRenderScale:
@@ -192,6 +122,7 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
     font: readFont(&findUsableFont(false)),
     cursorVisible: true,
     preferredRenderScale: 1.0f,
+    palette: buildColorPalette(),
   )
   applyConfig(term, loadConfig())
   spawn(term)
@@ -206,18 +137,6 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
   term.app.initialize()
 
   debug "Creating window"
-  let renderer =
-    if getEnv("NITTY_RENDERER", "hw").toLowerAscii() == "sw":
-      Renderer.Software
-    else:
-      Renderer.GLES
-
-  term.app.createWindow(ivec2(680, 480), renderer)
-  case renderer
-  of Renderer.Software:
-    term.buffer = newImage(680, 480)
-    term.palette = buildSWColorPalette()
-  of Renderer.GLES:
-    term.palette = buildHWColorPalette()
+  term.app.createWindow(ivec2(680, 480), Renderer.GLES)
 
   return term
