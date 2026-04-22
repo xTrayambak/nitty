@@ -14,13 +14,13 @@ type HWRenderer* = object
 
   font: FontMetrics
 
-func toNVG(c: chroma.ColorRGBA): nanovg.Color {.inline.} =
-  # OPTIMIZE: SIMD this, I guess.
+func toNVG(c: chroma.ColorRGBA): nanovg.Color =
+  const inv = 0.00392156862745098'f32 # ~ 1.0 / 255.0
   nanovg.Color(
-    r: c.r.float32 / 255'f32,
-    g: c.g.float32 / 255'f32,
-    b: c.b.float32 / 255'f32,
-    a: c.a.float32 / 255'f32,
+    r: c.r.float32 * inv,
+    g: c.g.float32 * inv,
+    b: c.b.float32 * inv,
+    a: c.a.float32 * inv,
   )
 
 proc renderCell(
