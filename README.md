@@ -26,6 +26,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - [X] Cursor rendering (GPU backend only, software backend cursor is incredibly inaccurate)
 - [X] Input improvements (repeat key events, mostly)
 - [X] GPU acceleration via NanoVG
+- [X] Focus tracking
 - [ ] Scrollback using scroll wheel
 - [X] Fractional scaling
 - [X] Bell

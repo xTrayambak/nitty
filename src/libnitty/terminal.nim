@@ -174,6 +174,10 @@ proc run*(terminal: Terminal) =
     of EventKind.PreferredRenderScale:
       terminal.preferredRenderScale = float32(event.preferredScale) / 120'f32
       info "Got preferred rendering scale", scale = terminal.preferredRenderScale
+    of EventKind.KeyboardFocusObtained:
+      vterm_state_focus_in(terminal.vterm.state)
+    of EventKind.KeyboardFocusLost:
+      vterm_state_focus_out(terminal.vterm.state)
     else:
       discard
 
