@@ -31,6 +31,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - [X] Fractional scaling
 - [ ] Mouse input
 - [X] Bell
+- [ ] Layer-shell mode (e.g, for running `cmatrix` as a desktop widget!)
 - [ ] Packaging for distros
 
 # Config
