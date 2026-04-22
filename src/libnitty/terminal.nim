@@ -16,16 +16,24 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
       endCol = rect.endCol ]#
 
     let terminal = cast[Terminal](user)
-    terminal.app.markDamaged()
-    terminal.damagedRects &= rect,
+    if terminal.app.renderer == Renderer.Software:
+      terminal.app.markDamaged()
+      terminal.damagedRects &= rect
+  ,
   moverect: proc(dest: VTermRect, src: VTermRect, user: pointer): int32 {.cdecl.} =
     let terminal = cast[Terminal](user)
+    if terminal.app.renderer != Renderer.Software:
+      return
+
     terminal.damagedRects &= dest
     terminal.damagedRects &= src,
   movecursor: proc(
       pos: VTermPos, oldpos: VTermPos, visible: int32, user: pointer
   ): int32 {.cdecl.} =
     let terminal = cast[Terminal](user)
+    if terminal.app.renderer != Renderer.Software:
+      return
+
     invalidateRow(terminal, oldpos.row, oldpos.row + 1)
     invalidateRow(terminal, pos.row, pos.row + 1)
     terminal.cursorPos = pos,
@@ -69,6 +77,7 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
 )
 
 proc initializeBackend*(terminal: Terminal) =
+  ## Initialize the underlying terminal state machine.
   debug "Initializing libvterm"
   terminal.vterm.vt = vterm_new(180, 130)
   vterm_set_utf8(terminal.vterm.vt, true)
@@ -89,11 +98,9 @@ proc initializeBackend*(terminal: Terminal) =
     cast[ptr TerminalObj](terminal),
   )
 
-proc run*(terminal: Terminal) =
-  var
-    swRenderer: SWRenderer
-    hwRenderer: HWRenderer
-
+proc initializeRendering(
+    terminal: Terminal, swRenderer: var SWRenderer, hwRenderer: var HWRenderer
+) =
   case terminal.app.renderer
   of Renderer.Software:
     swRenderer.ctx = newContext(terminal.buffer)
@@ -103,11 +110,19 @@ proc run*(terminal: Terminal) =
   of Renderer.GLES:
     hwRenderer = initHWRenderer(terminal)
 
+proc run*(terminal: Terminal) =
+  var
+    swRenderer: SWRenderer
+    hwRenderer: HWRenderer
+
+  initializeRendering(terminal, swRenderer, hwRenderer)
+
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
     if !eventOpt:
       continue
 
+    # FIXME: I'm not exactly sure if this is the best way to read from the pty slave.
     var buf: array[4096, char]
     while (let n = read(terminal.vterm.fds.master, buf[0].addr, sizeof(buf)); n > 0):
       discard vterm_input_write(terminal.vterm.vt, buf[0].addr, uint64(n))
