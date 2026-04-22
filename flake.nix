@@ -6,44 +6,56 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
-        pkgs = import nixpkgs { inherit stdenv.hostPlatform.system };
+        pkgs = import nixpkgs { inherit system; };
       in
       {
-        packages.default = pkgs.nimPackages.buildNimPackage {
+        packages.default = pkgs.buildNimPackage {
           pname = "nitty";
-	  version = "0.1.0";
-	  src = ./.;
+          version = "0.1.0";
+          src = ./.;
 
-	  buildInputs = with pkgs; [
+          buildInputs = with pkgs; [
             libvterm-neovim
             wayland
             libxkbcommon
-	    fontconfig
+            fontconfig
             libGL
           ];
 
-	  nativeBuildInputs = with pkgs; [
+          nativeBuildInputs = with pkgs; [
             pkg-config
           ];
 
-	  nimFlags = ["--define:release", "--opt:speed", "--define:lto"];
+          nimFlags = [
+            "--define:release"
+            "--opt:speed"
+            "--define:lto"
+          ];
 
-	  meta = with pkgs.lib; {
+          meta = with pkgs.lib; {
             description = "A high-performance, GPU-accelerated terminal emulator written in Nim";
-	    platforms = platforms.linux;
-	    license = licenses.bsd3;
-	  };
-	};
+            platforms = platforms.linux;
+            license = licenses.bsd3;
+          };
+        };
 
-	devShells.default = pkgs.mkShell {
-          buildInputs = self.packages.${system}.default.buildInputs ++ (with pkgs; [
-            nim
-            nimble
-          ]);
+        devShells.default = pkgs.mkShell {
+          buildInputs =
+            self.packages.${system}.default.buildInputs
+            ++ (with pkgs; [
+              nim
+              nimble
+            ]);
         };
       }
-    )
+    );
 }
