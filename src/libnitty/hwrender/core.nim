@@ -95,9 +95,10 @@ proc renderTerminal*(hw: var HWRenderer) =
       renderCell(hw, ensureMove(cell), x, y, hw.font.cellWidth, hw.font.cellHeight)
 
   # Cursor rendering
-  var cursorPos: VTermPos
-  vterm_state_get_cursorpos(hw.terminal.vterm.state, cursorPos.addr)
-  renderCursor(hw, ensureMove(cursorPos))
+  if hw.terminal.cursorVisible:
+    var cursorPos: VTermPos
+    vterm_state_get_cursorpos(hw.terminal.vterm.state, cursorPos.addr)
+    renderCursor(hw, ensureMove(cursorPos))
 
   let ctime = getMonoTime()
   if inMilliseconds(ctime - hw.lastFPSMeterDrawTime) >= 500:

@@ -190,6 +190,8 @@ proc vterm_mouse_button*(
 )
 
 proc vterm_state_get_cursorpos*(state: ptr VTermState, cursorpos: ptr VTermPos)
+proc vterm_state_focus_in*(state: ptr VTermState)
+proc vterm_state_focus_out*(state: ptr VTermState)
 
 proc vterm_parser_set_callbacks*(
   vt: ptr VTerm, callbacks: ptr VTermParserCallbacks, user: pointer
