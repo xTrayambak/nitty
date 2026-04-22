@@ -8,7 +8,7 @@ import ./[types],
        hwrender/core
 #!fmt: on
 
-export SWRenderer # CPU renderer
+export SWRenderer, renderSWCursor # CPU renderer
 export HWRenderer, initHWRenderer, renderTerminal # GPU renderer
 
 {.push inline.}

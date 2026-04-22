@@ -189,6 +189,8 @@ proc vterm_mouse_button*(
   vt: ptr VTerm, button: int32, pressed: bool, modifier: VTermModifier
 )
 
+proc vterm_state_get_cursorpos*(state: ptr VTermState, cursorpos: ptr VTermPos)
+
 proc vterm_parser_set_callbacks*(
   vt: ptr VTerm, callbacks: ptr VTermParserCallbacks, user: pointer
 )

@@ -87,6 +87,8 @@ proc initializeBackend*(terminal: Terminal) =
   terminal.vterm.vt = vterm_new(180, 130)
   vterm_set_utf8(terminal.vterm.vt, true)
 
+  terminal.vterm.state = vterm_obtain_state(terminal.vterm.vt)
+
   terminal.vterm.screen = vterm_obtain_screen(terminal.vterm.vt)
   vterm_screen_reset(terminal.vterm.screen, 1'i32)
   vterm_screen_set_damage_merge(terminal.vterm.screen, VTermDamagesize.Cell)
@@ -138,7 +140,7 @@ proc run*(terminal: Terminal) =
       case terminal.app.renderer
       of Renderer.Software:
         processDamage(terminal, swRenderer)
-        # renderCursor(terminal)
+        # renderSWCursor(terminal)
 
         let stride = terminal.buffer.width * sizeof(ColorRGBX)
 

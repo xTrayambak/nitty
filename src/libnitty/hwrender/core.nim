@@ -49,6 +49,17 @@ proc renderCell(
     )
     discard hw.ctx.text(x, y, cast[cstring](cell.chars[0].addr), nil)
 
+proc renderCursor(hw: var HWRenderer, cursor: VTermPos) =
+  hw.ctx.beginPath()
+  hw.ctx.rect(
+    float32(cursor.col + 1) * hw.font.cellWidth,
+    float32(cursor.row) * hw.font.cellHeight,
+    4'f32,
+    hw.font.cellHeight,
+  )
+  hw.ctx.fillColor(rgb(200, 200, 200))
+  hw.ctx.fill()
+
 proc renderTerminal*(hw: var HWRenderer) =
   glViewport(0, 0, hw.terminal.app.windowSize.x, hw.terminal.app.windowSize.y)
   glClearColor(0, 0, 0, 0)
@@ -82,6 +93,11 @@ proc renderTerminal*(hw: var HWRenderer) =
       )
 
       renderCell(hw, ensureMove(cell), x, y, hw.font.cellWidth, hw.font.cellHeight)
+
+  # Cursor rendering
+  var cursorPos: VTermPos
+  vterm_state_get_cursorpos(hw.terminal.vterm.state, cursorPos.addr)
+  renderCursor(hw, ensureMove(cursorPos))
 
   let ctime = getMonoTime()
   if inMilliseconds(ctime - hw.lastFPSMeterDrawTime) >= 500:
