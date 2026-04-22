@@ -106,11 +106,13 @@ proc renderTerminal*(hw: var HWRenderer) =
     hw.lastFPSMeterDrawTime = ctime
 
   # Performance stats
-  hw.ctx.beginPath()
-  hw.ctx.fontSize(24)
-  hw.ctx.fontFace("main")
-  hw.ctx.fillColor(rgb(0, 255, 0))
-  discard hw.ctx.text(16, 32, $int(hw.trackedFps), nil)
+  when defined(nittyFpsCounter):
+    # TODO: Make this a runtime flag.
+    hw.ctx.beginPath()
+    hw.ctx.fontSize(24)
+    hw.ctx.fontFace("main")
+    hw.ctx.fillColor(rgb(0, 255, 0))
+    discard hw.ctx.text(16, 32, $int(hw.trackedFps), nil)
 
   hw.ctx.endFrame()
 
