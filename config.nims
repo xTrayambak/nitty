@@ -1,5 +1,8 @@
-# begin Nimble config (version 2)
+## Neo lockfile config
+
 --noNimblePath
-when withDir(thisDir(), system.fileExists("nimble.paths")):
-  include "nimble.paths"
-# end Nimble config
+when withDir(thisDir(), system.fileExists("neo.paths")):
+  include "neo.paths"
+
+## End of Neo lockfile config
+    

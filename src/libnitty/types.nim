@@ -3,7 +3,7 @@
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import std/[importutils, monotimes]
 import pkg/[chroma, pixie]
-import bindings/libvterm
+import bindings/libvterm, ./font_metrics
 import pkg/surfer/app
 
 privateAccess(pixie.Typeface)
@@ -35,6 +35,10 @@ type
     cursorVisible*: bool
 
     rows*, cols*: int32
+    cursorRow*, cursorCol*: int32
+
+    mouseMode*: VTermMouseProp
+    reportFocus*: bool
 
     shell*: string
     useBell*: bool
@@ -42,6 +46,8 @@ type
     preferredRenderScale*: float32
     lastRenderTime*: MonoTime
     fps*: float32
+
+    fontMetrics*: FontMetrics
 
   Terminal* = ref TerminalObj
 

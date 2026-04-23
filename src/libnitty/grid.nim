@@ -7,7 +7,7 @@ import pkg/[pixie, vmath], pkg/surfer/types
 
 func computeTermGrid*(terminal: Terminal, windowSize: IVec2) =
   let
-    metrics = computeFontMetrics(terminal)
+    metrics = computeFontMetrics(terminal.font)
     cols = int32(windowSize.x.float32 / metrics.cellWidth)
     rows = int32(windowSize.y.float32 / metrics.cellHeight)
 

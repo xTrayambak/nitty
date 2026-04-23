@@ -10,17 +10,14 @@ type FontMetrics* = object
   cellWidth*: float32
   cellHeight*: float32
 
-func computeFontMetrics*(terminal: Terminal): FontMetrics =
+func computeFontMetrics*(font: Font): FontMetrics =
   var metrics = FontMetrics()
-  metrics.scale =
-    terminal.font.size / float32(terminal.font.typeface.opentype.head.unitsPerEm)
-  metrics.cellWidth =
-    float32(terminal.font.typeface.opentype.os2.xAvgCharWidth) * metrics.scale
+  metrics.scale = font.size / float32(font.typeface.opentype.head.unitsPerEm)
+  metrics.cellWidth = float32(font.typeface.opentype.os2.xAvgCharWidth) * metrics.scale
   metrics.cellHeight =
     float32(
-      terminal.font.typeface.opentype.hhea.ascender -
-        terminal.font.typeface.opentype.hhea.descender +
-        terminal.font.typeface.opentype.hhea.lineGap
+      font.typeface.opentype.hhea.ascender - font.typeface.opentype.hhea.descender +
+        font.typeface.opentype.hhea.lineGap
     ) * metrics.scale
 
   ensureMove(metrics)

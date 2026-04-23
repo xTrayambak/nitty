@@ -1,4 +1,4 @@
-## Logic to forward keyboard input to the VTerm emulator machine
+## Logic to forward keyboard and mouse input to the VTerm emulator machine
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import std/tables
@@ -96,3 +96,34 @@ proc handleKeyInput*(terminal: Terminal, keycode: uint32) =
       vterm_keyboard_unichar(terminal.vterm.vt, keysym, modifier)
     else:
       discard
+
+proc handleMouseMove*(terminal: Terminal, x, y: float) =
+  ## Given a mouse move event to the position (x, y),
+  ## forward this event to VTerm. This routine handles the job
+  ## of mapping surface coordinates to the specific (row, col).
+  let
+    row = int32(y / terminal.fontMetrics.cellHeight)
+    col = int32(x / terminal.fontMetrics.cellWidth)
+
+  terminal.cursorCol = col
+  terminal.cursorRow = row
+
+  if terminal.mouseMode > VTermMouseProp.Click:
+    echo "Move " & $col & ":" & $row
+    vterm_mouse_move(terminal.vterm.vt, col, row, VTermModifier.None)
+
+proc handleMouseClick*(terminal: Terminal, button: Button, state: ButtonState) =
+  echo "Click (button=" & $int32(button) & ", pressed=" & $(
+    state == ButtonState.Pressed
+  ) & ", state=" & $state & ", col=" & $terminal.cursorCol & ", row=" &
+    $terminal.cursorRow & ')'
+
+  vterm_mouse_move(
+    terminal.vterm.vt, terminal.cursorCol, terminal.cursorRow, VTermModifier.None
+  )
+  vterm_mouse_button(
+    terminal.vterm.vt,
+    cast[int32](1),
+    pressed = state == ButtonState.Pressed,
+    modifier = VTermModifier.None,
+  )

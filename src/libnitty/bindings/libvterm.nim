@@ -13,6 +13,12 @@ type
     `type`*: uint8
     idx*: uint8
 
+  VTermMouseProp* {.size: sizeof(int32), pure.} = enum
+    None = 0
+    Click
+    Drag
+    Move
+
 {.push header: "<vterm.h>".}
 type
   VTerm* {.importc: "struct $1".} = object
@@ -167,8 +173,16 @@ type
     DefaultBG = 0x04
     DefaultMask = 0x06
 
+  VTermAllocatorFunctions* {.importc.} = object
+    malloc*: proc(size: uint64, allocdata: pointer): pointer {.cdecl.}
+    free*: proc(pntr: pointer, allocdata: pointer) {.cdecl.}
+
 {.push importc.}
 proc vterm_new*(rows, cols: int32): ptr VTerm
+proc vterm_new_with_allocator*(
+  rows, cols: int32, allocator: VTermAllocatorFunctions
+): ptr VTerm
+
 proc vterm_free*(vt: ptr VTerm)
 proc vterm_set_utf8*(vt: ptr VTerm, state: bool)
 

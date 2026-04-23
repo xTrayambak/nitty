@@ -16,8 +16,6 @@ type HWRenderer* = object
   lastFPSMeterDrawTime: MonoTime
   trackedFps: float32
 
-  font: FontMetrics
-
 func toNVG(c: chroma.ColorRGBA): nanovg.Color =
   const inv = 0.00392156862745098'f32 # ~ 1.0 / 255.0
   nanovg.Color(
@@ -52,10 +50,10 @@ proc renderCell(
 proc renderCursor(hw: var HWRenderer, cursor: VTermPos) =
   hw.ctx.beginPath()
   hw.ctx.rect(
-    float32(cursor.col + 1) * hw.font.cellWidth,
-    float32(cursor.row) * hw.font.cellHeight,
+    float32(cursor.col + 1) * hw.terminal.fontMetrics.cellWidth,
+    float32(cursor.row) * hw.terminal.fontMetrics.cellHeight,
     4'f32,
-    hw.font.cellHeight,
+    hw.terminal.fontMetrics.cellHeight,
   )
   hw.ctx.fillColor(rgb(200, 200, 200))
   hw.ctx.fill()
@@ -84,15 +82,22 @@ proc renderTerminal*(hw: var HWRenderer) =
   for row in 0 ..< rows:
     for col in 0 ..< cols:
       let
-        x = float32(col + 1) * hw.font.cellWidth
-        y = float32(row + 1) * hw.font.cellHeight
+        x = float32(col + 1) * hw.terminal.fontMetrics.cellWidth
+        y = float32(row + 1) * hw.terminal.fontMetrics.cellHeight
 
       var cell: VTermScreenCell
       discard vterm_screen_get_cell(
         hw.terminal.vterm.screen, VTermPos(row: row, col: col), cell.addr
       )
 
-      renderCell(hw, ensureMove(cell), x, y, hw.font.cellWidth, hw.font.cellHeight)
+      renderCell(
+        hw,
+        ensureMove(cell),
+        x,
+        y,
+        hw.terminal.fontMetrics.cellWidth,
+        hw.terminal.fontMetrics.cellHeight,
+      )
 
   # Cursor rendering
   if hw.terminal.cursorVisible:
@@ -124,9 +129,7 @@ proc initHWRenderer*(terminal: Terminal): HWRenderer =
 
   nvgInit(eglGetProcAddress)
 
-  var hw = HWRenderer(
-    terminal: terminal, ctx: nvgCreateContext(), font: computeFontMetrics(terminal)
-  )
+  var hw = HWRenderer(terminal: terminal, ctx: nvgCreateContext())
   discard hw.ctx.createFont("main", hw.terminal.font.typeface.filePath)
     # FIXME: This is wasteful, as we're:
     # 1. Forcing pixie to parse the font
