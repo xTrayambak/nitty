@@ -109,15 +109,9 @@ proc handleMouseMove*(terminal: Terminal, x, y: float) =
   terminal.cursorRow = row
 
   if terminal.mouseMode > VTermMouseProp.Click:
-    echo "Move " & $col & ":" & $row
     vterm_mouse_move(terminal.vterm.vt, col, row, VTermModifier.None)
 
 proc handleMouseClick*(terminal: Terminal, button: Button, state: ButtonState) =
-  echo "Click (button=" & $int32(button) & ", pressed=" & $(
-    state == ButtonState.Pressed
-  ) & ", state=" & $state & ", col=" & $terminal.cursorCol & ", row=" &
-    $terminal.cursorRow & ')'
-
   vterm_mouse_move(
     terminal.vterm.vt, terminal.cursorCol, terminal.cursorRow, VTermModifier.None
   )

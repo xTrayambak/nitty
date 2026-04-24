@@ -70,7 +70,7 @@ proc initializeBackend*(terminal: Terminal) =
   vterm_output_set_callback(
     terminal.vterm.vt,
     proc(buff: ConstCStr, size: uint64, user: pointer) {.cdecl.} =
-      debugecho "write(" & repr($buff) & ')'
+      # debugecho "write(" & repr($buff) & ')'
       let terminal = cast[Terminal](user)
       discard write(terminal.vterm.fds.master, buff[0].addr, size.int),
     cast[ptr TerminalObj](terminal),
@@ -79,6 +79,9 @@ proc initializeBackend*(terminal: Terminal) =
 proc run*(terminal: Terminal) =
   terminal.fontMetrics = computeFontMetrics(terminal.font)
   var hwRenderer = initHWRenderer(terminal)
+
+  terminal.computeTermGrid(terminal.app.windowSize)
+  terminal.resize()
 
   while not terminal.app.closureRequested:
     let eventOpt = terminal.app.flushQueue()
