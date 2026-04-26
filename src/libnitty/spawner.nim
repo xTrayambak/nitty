@@ -61,13 +61,15 @@ proc spawn*(terminal: Terminal) =
 
     if shell.len > 0:
       discard posix.execlp(cstring(shell), cstring(terminal.shell), nil)
+      quit(QuitFailure)
     else:
-      error "Failed to execute shell program. Cannot find it in PATH! Child will now crash.",
+      error "Failed to execute shell program. Cannot find it in PATH!",
         shell = terminal.shell
 
-    quit(QuitSuccess)
+      while true:
+        discard pause()
   else:
-    debug "We're the main process, continuing initialization", pid = pid
+    debug "We're the main process, continuing initialization", childPid = pid
     discard posix.fcntl(
       master, posix.F_SETFL, posix.fcntl(master, posix.F_GETFL, 0) or O_NONBLOCK
     )
