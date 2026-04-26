@@ -55,7 +55,7 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
 proc initializeBackend*(terminal: Terminal) =
   ## Initialize the underlying terminal state machine.
   debug "Initializing libvterm"
-  terminal.vterm.vt = vterm_new(180, 130)
+  terminal.vterm.vt = vterm_new(20, 30)
   vterm_set_utf8(terminal.vterm.vt, true)
 
   terminal.vterm.state = vterm_obtain_state(terminal.vterm.vt)
@@ -75,6 +75,15 @@ proc initializeBackend*(terminal: Terminal) =
       discard write(terminal.vterm.fds.master, buff[0].addr, size.int),
     cast[ptr TerminalObj](terminal),
   )
+
+proc initialize*(terminal: Terminal, args: TerminalArgs) =
+  initializeBackend(terminal)
+  terminal.args = args
+
+  if *terminal.args.program:
+    terminal.shell = &terminal.args.program
+
+  spawn(terminal)
 
 proc run*(terminal: Terminal) =
   terminal.fontMetrics = computeFontMetrics(terminal.font)
@@ -141,7 +150,6 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
     palette: buildColorPalette(),
   )
   applyConfig(term, loadConfig())
-  spawn(term)
 
   debug "Initializing surfer app"
   term.app = newApp(title, appId = "xyz.xtrayambak.nitty")

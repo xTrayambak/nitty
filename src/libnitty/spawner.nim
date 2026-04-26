@@ -59,7 +59,12 @@ proc spawn*(terminal: Terminal) =
     putEnv("COLORTERM", "truecolor")
     putEnv("SHELL", shell)
 
-    discard posix.execlp(cstring(shell), cstring(terminal.shell), nil)
+    if shell.len > 0:
+      discard posix.execlp(cstring(shell), cstring(terminal.shell), nil)
+    else:
+      error "Failed to execute shell program. Cannot find it in PATH! Child will now crash.",
+        shell = terminal.shell
+
     quit(QuitSuccess)
   else:
     debug "We're the main process, continuing initialization", pid = pid

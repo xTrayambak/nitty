@@ -1,4 +1,9 @@
-import libnitty/terminal
+## Nitty is a fast terminal emulator written in Nim.
+##
+## Copyright (C) 2025-2026 Trayambak Rai (xtrayambak@disroot.org)
+
+import libnitty/[argparser, terminal, types]
+import pkg/shakar
 
 {.
   passC: gorge(
@@ -12,8 +17,14 @@ import libnitty/terminal
 .}
 
 proc main() {.inline.} =
+  let input = parseInput()
+  var args: TerminalArgs
+
+  args.drawFPSCounter = input.enabled("draw-fps-counter", "P")
+  args.program = input.flag("program")
+
   let term = createTerminal()
-  term.initializeBackend()
+  term.initialize(args = ensureMove(args))
   term.run()
 
   quit(QuitSuccess)

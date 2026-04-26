@@ -105,14 +105,13 @@ proc renderTerminal*(hw: var HWRenderer) =
     vterm_state_get_cursorpos(hw.terminal.vterm.state, cursorPos.addr)
     renderCursor(hw, ensureMove(cursorPos))
 
-  let ctime = getMonoTime()
-  if inMilliseconds(ctime - hw.lastFPSMeterDrawTime) >= 500:
-    hw.trackedFps = hw.terminal.fps
-    hw.lastFPSMeterDrawTime = ctime
-
   # Performance stats
-  when defined(nittyFpsCounter):
-    # TODO: Make this a runtime flag.
+  if hw.terminal.args.drawFPSCounter:
+    let ctime = getMonoTime()
+    if inMilliseconds(ctime - hw.lastFPSMeterDrawTime) >= 500:
+      hw.trackedFps = hw.terminal.fps
+      hw.lastFPSMeterDrawTime = ctime
+
     hw.ctx.beginPath()
     hw.ctx.fontSize(24)
     hw.ctx.fontFace("main")

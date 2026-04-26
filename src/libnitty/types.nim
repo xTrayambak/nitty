@@ -1,7 +1,7 @@
 ## Types for libnitty
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/[importutils, monotimes]
+import std/[importutils, monotimes, options]
 import pkg/[chroma, pixie]
 import bindings/libvterm, ./font_metrics
 import pkg/surfer/app
@@ -21,17 +21,18 @@ type
 
     fds*: TermFds
 
+  TerminalArgs* = object
+    drawFPSCounter*: bool
+    program*: Option[string] ## Program to run instead of the shell
+
   TerminalObj* = object
     app*: App
     vterm*: VTermObj
     palette*: ColorPalette
 
-    buffer*: pixie.Image
     font*: pixie.Font
-    damagedRects*: seq[VTermRect]
     backgroundColor*: chroma.ColorRGBA
 
-    cursorPos*: libvterm.VTermPos
     cursorVisible*: bool
 
     rows*, cols*: int32
@@ -48,19 +49,6 @@ type
     fps*: float32
 
     fontMetrics*: FontMetrics
+    args*: TerminalArgs
 
   Terminal* = ref TerminalObj
-
-func fullDamage*(terminal: Terminal) =
-  terminal.damagedRects &=
-    VTermRect(
-      startRow: 0, endRow: terminal.rows + 1, startCol: 0, endCol: terminal.cols + 1
-    )
-
-func invalidateRow*(terminal: Terminal, start, stop: int32) =
-  terminal.damagedRects &=
-    VTermRect(startRow: start, endRow: stop, startCol: 0, endCol: terminal.cols + 1)
-
-func invalidateCol*(terminal: Terminal, start, stop: int32) =
-  terminal.damagedRects &=
-    VTermRect(startRow: 0, endRow: terminal.rows + 1, startCol: start, endCol: stop)
