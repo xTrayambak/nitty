@@ -19,3 +19,5 @@ requires "chronicles >= 0.12.3"
 requires "nanovg >= 0.3.4"
 requires "parsetoml >= 0.7.2"
 requires "chroma >= 1.0.0"
+
+requires "ybus >= 0.1.1"
