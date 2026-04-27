@@ -22,5 +22,5 @@ parsetoml = ">= 0.7.2"
 chroma = ">= 1.0.0"
 
 [platforms.native]
-include = ["wayland-egl", "wayland-egl-backend", "glesv2", "egl", "vterm", "fontconfig"]
-link = ["wayland-egl", "wayland-egl-backend", "glesv2", "egl", "vterm", "fontconfig"]
+include = ["wayland-egl", "wayland-egl-backend", "glesv2", "egl", "vterm", "fontconfig", "simdutf"]
+link = ["wayland-egl", "wayland-egl-backend", "glesv2", "egl", "vterm", "fontconfig", "simdutf"]

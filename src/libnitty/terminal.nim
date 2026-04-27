@@ -4,7 +4,7 @@
 import std/[monotimes, os, posix, strutils, times]
 import pkg/[vmath, shakar, chronicles, chroma, pixie]
 import pkg/surfer/app
-import bindings/libvterm
+import bindings/[libvterm, simdutf]
 import ./[coloring, config, grid, input, renderer, fonts, font_metrics, spawner, types]
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
@@ -101,7 +101,12 @@ proc run*(terminal: Terminal) =
 
     # FIXME: I'm not exactly sure if this is the best way to read from the pty slave.
     var buf: array[4096, char]
-    while (let n = read(terminal.vterm.fds.master, buf[0].addr, sizeof(buf)); n > 0):
+    let n = read(terminal.vterm.fds.master, buf[0].addr, sizeof(buf))
+    if n > 0:
+      if not simdutf.validateUTF8(buf[0].addr, cast[uint64](n)):
+        warn "Cannot process incoming data as valid UTF-8, passing it to state machine anyways...",
+          count = n
+
       discard vterm_input_write(terminal.vterm.vt, buf[0].addr, uint64(n))
 
     let event = &eventOpt

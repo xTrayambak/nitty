@@ -33,6 +33,7 @@
             wayland
             libxkbcommon
             fontconfig
+            simdutf
             libGL
           ];
 
