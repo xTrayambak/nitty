@@ -7,14 +7,21 @@ import
   pkg/nanovg/wrapper,
   pkg/surfer/types,
   pkg/surfer/backend/wayland/bindings/[egl, gles2]
-import ../[coloring, font_metrics, types], ../bindings/libvterm
+import ../[coloring, font_metrics, types], ../bindings/[libvterm]
 
-type HWRenderer* = object
-  terminal*: Terminal
-  ctx*: nanovg.NVGContext
+type
+  CachedFB = object
+    fb: NVGLUFramebuffer
+    dimensions: IVec2
 
-  lastFPSMeterDrawTime: MonoTime
-  trackedFps: float32
+  HWRenderer* = object
+    terminal*: Terminal
+    ctx*: nanovg.NVGContext
+
+    lastFPSMeterDrawTime: MonoTime
+    trackedFps: float32
+
+    cache: CachedFB
 
 func toNVG(c: chroma.ColorRGBA): nanovg.Color =
   const inv = 0.00392156862745098'f32 # ~ 1.0 / 255.0
@@ -36,16 +43,14 @@ proc renderCell(
   )
   hw.ctx.fill()
 
-  # Draw the cell's text data, if any is present.
-  if cell.chars[0] != 0'u32:
-    hw.ctx.beginPath()
-    hw.ctx.fontSize(hw.terminal.font.size)
-    hw.ctx.fontFace("main")
+  hw.ctx.beginPath()
+  hw.ctx.fontSize(hw.terminal.font.size)
+  hw.ctx.fontFace("main")
 
-    hw.ctx.fillColor(
-      toNVG(toRGBA(hw.terminal, cell.fg, hw.terminal.palette, Usage.Foreground))
-    )
-    discard hw.ctx.text(x, y, cast[cstring](cell.chars[0].addr), nil)
+  hw.ctx.fillColor(
+    toNVG(toRGBA(hw.terminal, cell.fg, hw.terminal.palette, Usage.Foreground))
+  )
+  discard hw.ctx.text(x, y, cast[cstring](cell.chars[0].addr), nil)
 
 proc renderCursor(hw: var HWRenderer, cursor: VTermPos) =
   hw.ctx.beginPath()
@@ -58,22 +63,38 @@ proc renderCursor(hw: var HWRenderer, cursor: VTermPos) =
   hw.ctx.fillColor(rgb(200, 200, 200))
   hw.ctx.fill()
 
-proc renderTerminal*(hw: var HWRenderer) =
-  glViewport(0, 0, hw.terminal.app.windowSize.x, hw.terminal.app.windowSize.y)
-  glClearColor(0, 0, 0, 0)
-  glClear(GL_COLOR_BUFFER_BIT)
+proc drawTerminal(hw: var HWRenderer) =
+  let renderDimensions = hw.terminal.app.windowSize
+
+  # If the size is the same as before, we needn't reallocate the FBOs
+  if renderDimensions != hw.cache.dimensions:
+    if hw.cache.fb != nil:
+      nvgluDeleteFramebuffer(hw.cache.fb)
+
+    const ifNoDelete = 1'i32 shl 16'i32
+
+    hw.cache.fb = nvgluCreateFramebuffer(
+      hw.ctx,
+      renderDimensions.x,
+      renderDimensions.y,
+      cast[int32](ifNoDelete or cast[int32](ifPremultiplied)),
+    )
+    hw.cache.dimensions = renderDimensions
+
+  nvgluBindFramebuffer(hw.cache.fb)
+  glViewport(0, 0, renderDimensions.x, renderDimensions.y)
+  glClearColor(0.0, 0.0, 0.0, 0.0)
+  glClear(GL_COLOR_BUFFER_BIT or GL_STENCIL_BUFFER_BIT)
 
   hw.ctx.beginFrame(
-    float32(hw.terminal.app.windowSize.x),
-    float32(hw.terminal.app.windowSize.y),
+    float32(renderDimensions.x),
+    float32(renderDimensions.y),
     hw.terminal.preferredRenderScale,
   )
 
   hw.ctx.beginPath()
   hw.ctx.fillColor(toNVG(hw.terminal.backgroundColor))
-  hw.ctx.rect(
-    0, 0, float32(hw.terminal.app.windowSize.x), float32(hw.terminal.app.windowSize.y)
-  )
+  hw.ctx.rect(0, 0, float32(renderDimensions.x), float32(renderDimensions.y))
   hw.ctx.fill()
 
   var rows, cols: int32
@@ -105,6 +126,31 @@ proc renderTerminal*(hw: var HWRenderer) =
     vterm_state_get_cursorpos(hw.terminal.vterm.state, cursorPos.addr)
     renderCursor(hw, ensureMove(cursorPos))
 
+  hw.ctx.endFrame()
+  nvgluBindFramebuffer(nil)
+
+proc renderTerminal*(hw: var HWRenderer) =
+  if hw.terminal.dirty:
+    drawTerminal(hw)
+    hw.terminal.dirty = false
+
+  let dimensions = hw.cache.dimensions
+  glViewport(0, 0, dimensions.x, dimensions.y)
+  glClearColor(0.0, 0.0, 0.0, 0.0)
+  glClear(GL_COLOR_BUFFER_BIT or GL_STENCIL_BUFFER_BIT)
+
+  hw.ctx.beginFrame(
+    float32(dimensions.x), float32(dimensions.y), hw.terminal.preferredRenderScale
+  )
+  hw.ctx.beginPath()
+  hw.ctx.rect(0'f32, 0'f32, float32(dimensions.x), float32(dimensions.y))
+  hw.ctx.fillPaint(
+    hw.ctx.imagePattern(
+      0, 0, float32(dimensions.x), float32(dimensions.y), 0, hw.cache.fb.image, 1.0'f32
+    )
+  )
+  hw.ctx.fill()
+
   # Performance stats
   if hw.terminal.args.drawFPSCounter:
     let ctime = getMonoTime()
@@ -128,7 +174,9 @@ proc initHWRenderer*(terminal: Terminal): HWRenderer =
 
   nvgInit(eglGetProcAddress)
 
-  var hw = HWRenderer(terminal: terminal, ctx: nvgCreateContext())
+  var hw = HWRenderer(
+    terminal: terminal, ctx: nanovg.nvgCreateContext({nifDebug, nifStencilStrokes})
+  )
   discard hw.ctx.createFont("main", hw.terminal.font.typeface.filePath)
     # FIXME: This is wasteful, as we're:
     # 1. Forcing pixie to parse the font

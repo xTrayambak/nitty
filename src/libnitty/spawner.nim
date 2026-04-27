@@ -55,6 +55,8 @@ proc spawn*(terminal: Terminal) =
     discard dup2(child, getOsFileHandle(stdin))
     discard dup2(child, getOsFileHandle(stderr))
 
+    discard close(child)
+
     putEnv("TERM", "xterm-256color")
     putEnv("COLORTERM", "truecolor")
     putEnv("SHELL", shell)

@@ -45,6 +45,7 @@ type
     useBell*: bool
 
     preferredRenderScale*: float32
+    dirty*: bool
     lastRenderTime*: MonoTime
     fps*: float32
 

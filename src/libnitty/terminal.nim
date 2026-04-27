@@ -37,6 +37,8 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
     else:
       debug "Got bell op, ignoring."
   ,
+  damage: proc(rect: VTermRect, user: pointer): int32 {.cdecl.} =
+    cast[Terminal](user).dirty = true,
   resize: proc(rows: int32, cols: int32, user: pointer): int32 {.cdecl.} =
     discard # echo "resize"
   ,
@@ -118,9 +120,11 @@ proc run*(terminal: Terminal) =
     of EventKind.WindowResized:
       terminal.computeTermGrid(event.windowSize)
       terminal.resize()
+      terminal.dirty = true
     of EventKind.PreferredRenderScale:
       terminal.preferredRenderScale = float32(event.preferredScale) / 120'f32
       info "Got preferred rendering scale", scale = terminal.preferredRenderScale
+      terminal.dirty = true
     of EventKind.KeyboardFocusObtained:
       if terminal.reportFocus:
         vterm_state_focus_in(terminal.vterm.state)
