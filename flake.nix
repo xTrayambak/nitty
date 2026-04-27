@@ -25,7 +25,7 @@
       {
         packages.default = pkgs.buildNimblePackage {
           pname = "nitty";
-          version = "0.1.0";
+          version = "0.2.0";
           src = ./.;
 
           buildInputs = with pkgs; [

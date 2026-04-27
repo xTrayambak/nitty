@@ -14,7 +14,7 @@ It uses `libvterm` for handling VT output and acting upon it.
 You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help with Nitty, or to follow its development.
 
 # Features
-- Runs most terminal apps fine (keyword: **most**)
+- Runs basically every terminal program fine
   * In fact, this README was written entirely in Neovim running inside Nitty!
 - Color rendering support
 - Config file (`~/.config/nitty/config.toml`)
