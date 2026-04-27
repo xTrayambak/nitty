@@ -162,7 +162,7 @@ proc renderTerminal*(hw: var HWRenderer) =
     hw.ctx.fontSize(24)
     hw.ctx.fontFace("main")
     hw.ctx.fillColor(rgb(0, 255, 0))
-    discard hw.ctx.text(16, 32, $int(hw.trackedFps), nil)
+    discard hw.ctx.text(16, 32, cstring($int(hw.trackedFps)), nil)
 
   hw.ctx.endFrame()
 

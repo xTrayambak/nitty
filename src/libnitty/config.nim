@@ -3,7 +3,7 @@
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import std/[os, options, strutils]
 import pkg/[chronicles, chroma, parsetoml, pixie, shakar]
-import ./[coloring, fonts, types]
+import ./[fonts, types]
 
 logScope:
   topics = "libnitty config file"

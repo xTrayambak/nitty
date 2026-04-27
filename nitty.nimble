@@ -12,7 +12,7 @@ bin = @["nitty"]
 requires "nim >= 2.2.0"
 requires "pixie >= 5.1.0"
 requires "shakar >= 0.1.3"
-requires "surfer >= 0.1.3"
+requires "surfer#ac7f1c2c2c3ae44d2132515826735f76e7357e20"
 requires "xkb >= 1.4.1"
 requires "vmath >= 2.0.1"
 requires "chronicles >= 0.12.3"

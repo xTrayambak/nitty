@@ -1,6 +1,5 @@
 import std/importutils
 import pkg/pixie
-import ./types
 
 privateAccess(pixie.Typeface)
 privateAccess(pixie.Context)
