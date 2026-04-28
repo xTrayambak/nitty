@@ -174,9 +174,8 @@ proc initHWRenderer*(terminal: Terminal): HWRenderer =
 
   nvgInit(eglGetProcAddress)
 
-  var hw = HWRenderer(
-    terminal: terminal, ctx: nanovg.nvgCreateContext({nifDebug, nifStencilStrokes})
-  )
+  var hw =
+    HWRenderer(terminal: terminal, ctx: nanovg.nvgCreateContext({nifStencilStrokes}))
   discard hw.ctx.createFont("main", hw.terminal.font.typeface.filePath)
     # FIXME: This is wasteful, as we're:
     # 1. Forcing pixie to parse the font
