@@ -91,6 +91,12 @@
       "url": "https://github.com/treeform/bumpy",
       "checksum": "633ca1f19885c1fee4ab91f28b1ef1f449b9f8ef27050383595ca50bda86b893"
     },
+    "pretty": {
+      "version": "0.2.0",
+      "commit": "9e770046c5cdf23d395d6b21c4657345481b1c76",
+      "url": "https://github.com/treeform/pretty",
+      "checksum": "a821a0b10261784a670d280759c2b1736e151e3866a3b700654cbd3e6ced4f20"
+    },
     "vmath": {
       "version": "2.0.1",
       "commit": "ddfcd738578c47ed3330b917f5efecf5a15128b2",
@@ -102,6 +108,12 @@
       "commit": "e7f87336d2fa47b7752b42f0be4cabd5663a5e5c",
       "url": "https://github.com/status-im/nim-chronicles",
       "checksum": "5814676907c9978ade79b5dd6c7d7d4b145e50821c8771c7900dc9480166c123"
+    },
+    "ybus": {
+      "version": "0.1.1",
+      "commit": "041d8dc6e52c0ea06be48017102b7c2007ccf9a2",
+      "url": "https://github.com/nim-windowing/ybus",
+      "checksum": "6314807146eb33f1fcaef1d60e91bafd8549a95827ccf625e330c61fe61ee3ff"
     },
     "crunchy": {
       "version": "0.1.0",

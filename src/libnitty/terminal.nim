@@ -1,11 +1,13 @@
 ## Base routines for the Nitty terminal emulator
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/[monotimes, os, posix, strutils, times]
+import std/[monotimes, os, posix, strutils, tables, times]
 import pkg/[vmath, shakar, chronicles, chroma, pixie]
-import pkg/surfer/app
+import pkg/surfer/app, pkg/ybus/client/unix_sync
 import bindings/[libvterm, simdutf]
-import ./[coloring, config, grid, input, renderer, fonts, font_metrics, spawner, types]
+import
+  ./[coloring, config, grid, input, renderer, fonts, font_metrics, spawner, types],
+  ./dbus/notifications
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
   settermprop: proc(
@@ -54,7 +56,7 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
   ,
 )
 
-proc initializeBackend*(terminal: Terminal) =
+proc initializeBackend(terminal: Terminal) =
   ## Initialize the underlying terminal state machine.
   debug "Initializing libvterm"
   terminal.vterm.vt = vterm_new(20, 30)
@@ -78,14 +80,46 @@ proc initializeBackend*(terminal: Terminal) =
     cast[ptr TerminalObj](terminal),
   )
 
+proc initializeDBus(terminal: Terminal) =
+  ## Initialize a connection to the user's bus session
+  if terminal.args.disableDBus:
+    warn "Not initializing connection to DBus. Some features will not be available."
+    return
+
+  terminal.bus = newBusClient()
+  terminal.bus.connect()
+
+  info "Connected to DBus session",
+    serial = terminal.bus.serial, uniqueName = terminal.bus.uniqueName
+
 proc initialize*(terminal: Terminal, args: TerminalArgs) =
-  initializeBackend(terminal)
   terminal.args = args
+  initializeBackend(terminal)
+  initializeDBus(terminal)
 
   if *terminal.args.program:
     terminal.shell = &terminal.args.program
 
   spawn(terminal)
+
+proc notify*(terminal: Terminal, summary, body: string, avoidSpam: bool = false) =
+  if terminal.bus == nil:
+    warn "Cannot send notification to user, either the user bus is not running, or the user specifically asked for us to not connect to it."
+    return
+
+  terminal.lastNotificationId = terminal.bus.notify(
+    "xyz.xtrayambak.nitty",
+    (
+      if *terminal.lastNotificationId and avoidSpam: &terminal.lastNotificationId
+      else: 0'u32
+    ),
+    "",
+    summary,
+    body,
+    @[],
+    initTable[string, Variant](),
+    0,
+  )
 
 proc run*(terminal: Terminal) =
   terminal.fontMetrics = computeFontMetrics(terminal.font)
@@ -103,9 +137,16 @@ proc run*(terminal: Terminal) =
     var buf: array[4096, char]
     let n = read(terminal.vterm.fds.master, buf[0].addr, sizeof(buf))
     if n > 0:
-      if not simdutf.validateUTF8(buf[0].addr, cast[uint64](n)):
-        warn "Cannot process incoming data as valid UTF-8, passing it to state machine anyways...",
-          count = n
+      when not defined(nittyDontValidateUTF):
+        if not simdutf.validateUTF8(buf[0].addr, cast[uint64](n)):
+          warn "Cannot process incoming data as valid UTF-8, passing it to state machine anyways...",
+            count = n
+          terminal.notify(
+            summary = "Cannot process data as UTF8",
+            body =
+              "The terminal has hit pieces of data that could not be validated as well-formed UTF8. There is a chance that the terminal will lag, show garbled text, or otherwise misbehave. Good luck.",
+            avoidSpam = true,
+          )
 
       discard vterm_input_write(terminal.vterm.vt, buf[0].addr, uint64(n))
 

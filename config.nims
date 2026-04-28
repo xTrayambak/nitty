@@ -6,4 +6,3 @@ when defined(NeoPkgVersion):
     include "neo.paths"
 
 ## End of Neo lockfile config
-

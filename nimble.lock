@@ -188,23 +188,13 @@
       }
     },
     "nayland": {
-      "version": "0.1.32",
-      "vcsRevision": "b9df15e337eca3b0dcb63113408f330eb778b95c",
+      "version": "0.1.4",
+      "vcsRevision": "254c52bbcda8c3ad3f60be99e1b999968abf7a18",
       "url": "https://github.com/nim-windowing/nayland",
       "downloadMethod": "git",
       "dependencies": [],
       "checksums": {
-        "sha1": "c196897e5cedf529192189ddd5abe3794e1c30e0"
-      }
-    },
-    "nim": {
-      "version": "2.2.10",
-      "vcsRevision": "",
-      "url": "https://github.com/nim-lang/Nim.git",
-      "downloadMethod": "git",
-      "dependencies": [],
-      "checksums": {
-        "sha1": "6d74fd0b8109d723bde1176628f4f7ffef103da5"
+        "sha1": "d8d04ff463b1094e2bbd1a9a19a1af5b8d4a1963"
       }
     },
     "parsetoml": {
@@ -245,6 +235,16 @@
         "sha1": "a17700a73fcb77dfac2aa61dd19c005f67088035"
       }
     },
+    "pretty": {
+      "version": "0.2.0",
+      "vcsRevision": "9e770046c5cdf23d395d6b21c4657345481b1c76",
+      "url": "https://github.com/treeform/pretty",
+      "downloadMethod": "git",
+      "dependencies": [],
+      "checksums": {
+        "sha1": "9929e14b867e54ae38ddb6ae27ab32fafae4be59"
+      }
+    },
     "shakar": {
       "version": "0.1.3",
       "vcsRevision": "48333bf20e39519929cbcfaa3b3af60858805f35",
@@ -282,6 +282,21 @@
       ],
       "checksums": {
         "sha1": "73bfe7f4f3114e0a8fda2c0daa8ec6cce2b6e5d6"
+      }
+    },
+    "ybus": {
+      "version": "0.1.1",
+      "vcsRevision": "041d8dc6e52c0ea06be48017102b7c2007ccf9a2",
+      "url": "https://github.com/nim-windowing/ybus",
+      "downloadMethod": "git",
+      "dependencies": [
+        "shakar",
+        "flatty",
+        "results",
+        "pretty"
+      ],
+      "checksums": {
+        "sha1": "0c21caf79328ff15da18513fcafe6b6cdc8aeecb"
       }
     }
   },

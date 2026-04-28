@@ -4,7 +4,7 @@
 import std/[importutils, monotimes, options]
 import pkg/[chroma, pixie]
 import bindings/libvterm, ./font_metrics
-import pkg/surfer/app
+import pkg/surfer/app, pkg/ybus/client/unix_sync
 
 privateAccess(pixie.Typeface)
 
@@ -24,9 +24,12 @@ type
   TerminalArgs* = object
     drawFPSCounter*: bool
     program*: Option[string] ## Program to run instead of the shell
+    disableDBus*: bool
 
   TerminalObj* = object
     app*: App
+    bus*: BusClient
+
     vterm*: VTermObj
     palette*: ColorPalette
 
@@ -51,5 +54,7 @@ type
 
     fontMetrics*: FontMetrics
     args*: TerminalArgs
+
+    lastNotificationId*: Option[uint32]
 
   Terminal* = ref TerminalObj
