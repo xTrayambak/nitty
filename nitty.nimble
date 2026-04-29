@@ -1,6 +1,6 @@
 # Package
 
-version = "0.2.0"
+version = "0.2.1"
 author = "xTrayambak"
 description = "A fast, GPU-accelerated terminal emulator written in Nim"
 license = "BSD-3-Clause"
@@ -19,5 +19,5 @@ requires "chronicles >= 0.12.3"
 requires "nanovg >= 0.3.4"
 requires "parsetoml >= 0.7.2"
 requires "chroma >= 1.0.0"
-
 requires "ybus >= 0.1.1"
+

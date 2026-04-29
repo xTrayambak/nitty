@@ -25,7 +25,7 @@
       {
         packages.default = pkgs.buildNimblePackage {
           pname = "nitty";
-          version = "0.2.0";
+          version = "0.2.1";
           src = ./.;
 
           buildInputs = with pkgs; [
@@ -42,7 +42,7 @@
           ];
 
           nimbleLockFile = ./nimble.lock;
-          nimbleDepsHash = "sha256-9Kuh3MzsTgSqE+CEPZZl+31PJM+ezYZVvQBPVushpRE=";
+          nimbleDepsHash = "sha256-2P/gEwYFVBooi40Uzz1QMPUpp0U+8CUt+YmiMk1vVCk=";
 
           nimFlags = [
             "--define:release"
