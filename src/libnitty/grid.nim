@@ -11,6 +11,7 @@ func computeTermGrid*(terminal: Terminal, windowSize: IVec2) =
     cols = int32(windowSize.x.float32 / metrics.cellWidth)
     rows = int32(windowSize.y.float32 / metrics.cellHeight)
 
+  terminal.fontMetrics = metrics
   terminal.rows = rows
   terminal.cols = cols
 

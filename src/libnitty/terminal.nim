@@ -122,7 +122,6 @@ proc notify*(terminal: Terminal, summary, body: string, avoidSpam: bool = false)
   )
 
 proc run*(terminal: Terminal) =
-  terminal.fontMetrics = computeFontMetrics(terminal.font)
   var hwRenderer = initHWRenderer(terminal)
 
   terminal.computeTermGrid(terminal.app.windowSize)
