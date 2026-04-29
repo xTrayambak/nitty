@@ -1,14 +1,13 @@
 # nitty
 
+![A screenshot of Nitty running various apps](screenshots/big.jpg)
+
 Nitty is a fast terminal emulator written in Nim.
 It was originally written in ~4 days and has ~1000 lines of code.
 
 It uses its GPU-accelerated renderer by default. It used to have a CPU renderer, but that has been ripped out for simplicity's sake.
 
 It uses `libvterm` for handling VT output and acting upon it.
-
-![A screenshot of Nitty running htop](screenshots/htop.jpg)
-![A screenshot of Nitty running Neovim](screenshots/nvim.jpg)
 
 # Support
 You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help with Nitty, or to follow its development.
