@@ -23,6 +23,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - Tab completions in shells work
 
 # Roadmap
+## Features
 - [X] Cursor rendering
 - [X] Input improvements (repeat key events, mostly)
 - [X] GPU acceleration via NanoVG
@@ -33,6 +34,10 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - [X] Bell
 - [ ] Layer-shell mode (e.g, for running `cmatrix` as a desktop widget!)
 - [ ] Packaging for distros
+- [ ] More modern terminal protocols and stuff, but requires the completion of the goal below to be implemented neatly.
+
+## Architectural
+- [ ] Stop relying on `libvterm` for parsing and state management, create a pure Nim emulator machine
 
 # Config
 Here's a basic config for Nitty:
