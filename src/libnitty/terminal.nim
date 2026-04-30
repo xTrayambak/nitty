@@ -56,10 +56,17 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
   ,
 )
 
+let allocator {.global.} = VTermAllocatorFunctions(
+  malloc: proc(size: uint64, _: pointer): pointer {.cdecl.} =
+    alloc0(size),
+  free: proc(buffer: pointer, _: pointer) {.cdecl.} =
+    dealloc(buffer),
+)
+
 proc initializeBackend(terminal: Terminal) =
   ## Initialize the underlying terminal state machine.
   debug "Initializing libvterm"
-  terminal.vterm.vt = vterm_new(20, 30)
+  terminal.vterm.vt = vterm_new_with_allocator(20, 30, allocator.addr, allocdata = nil)
   vterm_set_utf8(terminal.vterm.vt, true)
 
   terminal.vterm.state = vterm_obtain_state(terminal.vterm.vt)

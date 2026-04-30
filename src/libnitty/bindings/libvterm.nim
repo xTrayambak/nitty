@@ -180,7 +180,7 @@ type
 {.push importc.}
 proc vterm_new*(rows, cols: int32): ptr VTerm
 proc vterm_new_with_allocator*(
-  rows, cols: int32, allocator: VTermAllocatorFunctions
+  rows, cols: int32, allocator: ptr VTermAllocatorFunctions, allocdata: pointer
 ): ptr VTerm
 
 proc vterm_free*(vt: ptr VTerm)
