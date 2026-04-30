@@ -169,6 +169,7 @@ proc run*(terminal: Terminal) =
       terminal.app.queueRedraw()
     of EventKind.KeyPressed, EventKind.KeyRepeated:
       handleKeyInput(terminal, event.key.code)
+      terminal.dirty = true
     of EventKind.WindowResized:
       terminal.computeTermGrid(event.windowSize)
       terminal.resize()
