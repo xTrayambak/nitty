@@ -6,7 +6,9 @@ import pkg/[vmath, shakar, chronicles, chroma, pixie]
 import pkg/surfer/app, pkg/ybus/client/unix_sync
 import bindings/[libvterm, simdutf]
 import
-  ./[coloring, config, grid, input, renderer, fonts, font_metrics, spawner, types],
+  ./[
+    coloring, config, grid, input, renderer, fonts, font_metrics, screen, spawner, types
+  ],
   ./dbus/notifications
 
 let screenCallbacks {.global.} = VTermScreenCallbacks(
@@ -15,22 +17,7 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
   ): int32 {.cdecl.} =
     debug "Set terminal property", prop = prop
 
-    let terminal = cast[Terminal](user)
-
-    case prop
-    of VTermProp.Title:
-      let title = $val.string
-      debug "Setting window title from callback", title = title
-      terminal.app.setTitle(title)
-    of VTermProp.CursorVisible:
-      terminal.cursorVisible = val.boolean
-    of VTermProp.Mouse:
-      terminal.mouseMode = cast[VTermMouseProp](val.number)
-    of VTermProp.FocusReport:
-      terminal.reportFocus = val.boolean
-    else:
-      debug "Unhandled terminal property set-request, ignoring.", prop = prop
-  ,
+    setTerminalProperty(cast[Terminal](user), prop, val),
   bell: proc(user: pointer): int32 {.cdecl.} =
     let terminal = cast[Terminal](user)
     if terminal.useBell:
@@ -41,19 +28,6 @@ let screenCallbacks {.global.} = VTermScreenCallbacks(
   ,
   damage: proc(rect: VTermRect, user: pointer): int32 {.cdecl.} =
     cast[Terminal](user).dirty = true,
-  resize: proc(rows: int32, cols: int32, user: pointer): int32 {.cdecl.} =
-    discard # echo "resize"
-  ,
-  sb_pushline: proc(
-      cols: int32, cells: ptr ConstVTermScreenCell, user: pointer
-  ): int32 {.cdecl.} =
-    discard # echo "sb_pushline"
-  ,
-  sb_popline: proc(
-      cols: int32, cells: ptr VTermScreenCell, user: pointer
-  ): int32 {.cdecl.} =
-    discard # echo "sb_popline"
-  ,
 )
 
 let allocator {.global.} = VTermAllocatorFunctions(

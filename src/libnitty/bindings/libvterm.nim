@@ -123,9 +123,9 @@ type
     fg*, bg*: VTermColor
 
   VTermParserCallbacks* {.importc: "$1".} = object
-    text*: proc(bytes: cstring, length: uint64, user: pointer): int32 {.cdecl.}
+    text*: proc(bytes: ConstCStr, length: uint64, user: pointer): int32 {.cdecl.}
     control*: proc(control: char, user: pointer): int32 {.cdecl.}
-    escape*: proc(bytes: cstring, length: uint64, user: pointer): int32 {.cdecl.}
+    escape*: proc(bytes: ConstCStr, length: uint64, user: pointer): int32 {.cdecl.}
     csi*: proc(
       leader: cstring,
       args: ptr UncheckedArray[uint64],
