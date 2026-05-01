@@ -29,6 +29,7 @@ type
   TerminalObj* = object
     app*: App
     bus*: BusClient
+    machine*: Machine
 
     vterm*: VTermObj
     palette*: ColorPalette
@@ -56,7 +57,5 @@ type
     args*: TerminalArgs
 
     lastNotificationId*: Option[uint32]
-
-    parser*: Parser
 
   Terminal* = ref TerminalObj

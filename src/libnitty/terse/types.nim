@@ -1,6 +1,7 @@
 ## Types for terse
 ##
 ## Copyright (C) 2026 Trayambak Rai (xtrayambak@disroot.org)
+import pkg/chroma
 
 const
   CSILeaderMax* = 16
@@ -10,6 +11,11 @@ const
   IntermedMax* = 16
 
 type
+  Cell* = object
+    data*: uint32
+
+    fg*, bg*: ColorRGB
+
   ParserState* {.pure, size: sizeof(uint8).} = enum
     Normal
     CSILeader
@@ -49,3 +55,11 @@ type
   ParserInput* = object
     data*: ptr UncheckedArray[uint8]
     size*: uint64
+
+  MachineObj = object
+    parser*: Parser
+    grid*: seq[Cell]
+
+    rows*, cols*: uint32
+
+  Machine* = ref MachineObj

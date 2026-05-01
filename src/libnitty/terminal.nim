@@ -5,7 +5,7 @@ import std/[monotimes, os, posix, strutils, tables, times]
 import pkg/[vmath, shakar, chronicles, chroma, pixie]
 import pkg/surfer/app, pkg/ybus/client/unix_sync
 import bindings/[libvterm, simdutf]
-import terse/[parser, types]
+import terse/[machine, parser, types]
 import
   ./[
     coloring, config, grid, input, renderer, fonts, font_metrics, screen, spawner, types
@@ -61,6 +61,8 @@ proc initializeBackend(terminal: Terminal) =
       discard write(terminal.vterm.fds.master, buff[0].addr, size.int),
     cast[ptr TerminalObj](terminal),
   )
+
+  terminal.machine = initMachine(20, 30)
 
 proc initializeDBus(terminal: Terminal) =
   ## Initialize a connection to the user's bus session
@@ -129,7 +131,7 @@ proc run*(terminal: Terminal) =
             avoidSpam = true,
           )
 
-      terminal.parser.eat(
+      terminal.machine.parser.eat(
         ParserInput(
           data: cast[ptr UncheckedArray[uint8]](buf[0].addr), size: cast[uint64](n)
         )

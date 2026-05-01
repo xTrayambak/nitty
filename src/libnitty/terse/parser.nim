@@ -18,13 +18,8 @@ func handleEscape(parser: var Parser, cmd: char) =
   debugEcho "Handle escape '" & cmd & '\''
 
 func handleText(parser: var Parser, str: openArray[byte]): uint64 =
-  for b in str:
-    {.cast(noSideEffect).}:
-      write stdout, cast[char](b)
-
-  {.cast(noSideEffect).}:
-    write stdout, '\n'
   let eaten = cast[uint64](str.len)
+
   eaten - 1'u64
 
 func eat*(parser: var Parser, input: ParserInput) =
@@ -43,7 +38,6 @@ func eat*(parser: var Parser, input: ParserInput) =
 
     case c
     of 0'u8, 0x7F'u8:
-      debugEcho "NUL/DEL"
       # NUL / DEL
       if isStringState():
         handleStrFragment(
@@ -52,13 +46,11 @@ func eat*(parser: var Parser, input: ParserInput) =
 
       continue
     of 0x18'u8, 0x1a'u8:
-      debugEcho "CAN/SUB"
       # CAN / SUB
       parser.inEscape = false
       parser.state = ParserState.Normal
       strStart = 0'u64
     of 0x1b'u8:
-      debugEcho "ESC"
       # ESC
       parser.intermed.len = 0
       if isStringState():
@@ -68,11 +60,9 @@ func eat*(parser: var Parser, input: ParserInput) =
       continue
     else:
       if (c == 0x07'u8 and isStringState()):
-        debugEcho "BEL"
         # BEL, can stand for ST in OSC or DCS state
         discard
       elif c < 0x20'u8:
-        debugEcho "C0"
         # Other C0
         if parser.state == ParserState.SOS:
           continue # All other C0s permitted in SOS 

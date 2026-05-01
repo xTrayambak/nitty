@@ -2,7 +2,7 @@
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import ./[types, pty, font_metrics]
-import bindings/libvterm
+import bindings/libvterm, terse/machine
 import pkg/[pixie, vmath]
 
 func computeTermGrid*(terminal: Terminal, windowSize: IVec2) =
@@ -17,6 +17,7 @@ func computeTermGrid*(terminal: Terminal, windowSize: IVec2) =
 
 proc resize*(terminal: Terminal) =
   vterm_set_size(terminal.vterm.vt, terminal.rows, terminal.cols)
+  terminal.machine.resize(uint32 terminal.rows, uint32 terminal.cols)
 
   var ws = winsize(wsRow: uint16(terminal.rows), wsCol: uint16(terminal.cols))
   discard pty.ioctl(terminal.vterm.fds.master, TIOCSWINSZ, ws.addr)
