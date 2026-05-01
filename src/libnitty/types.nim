@@ -3,7 +3,7 @@
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import std/[importutils, monotimes, options]
 import pkg/[chroma, pixie]
-import bindings/libvterm, ./font_metrics
+import bindings/libvterm, terse/types, ./font_metrics
 import pkg/surfer/app, pkg/ybus/client/unix_sync
 
 privateAccess(pixie.Typeface)
@@ -56,5 +56,7 @@ type
     args*: TerminalArgs
 
     lastNotificationId*: Option[uint32]
+
+    parser*: Parser
 
   Terminal* = ref TerminalObj

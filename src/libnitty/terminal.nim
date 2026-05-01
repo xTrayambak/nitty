@@ -5,6 +5,7 @@ import std/[monotimes, os, posix, strutils, tables, times]
 import pkg/[vmath, shakar, chronicles, chroma, pixie]
 import pkg/surfer/app, pkg/ybus/client/unix_sync
 import bindings/[libvterm, simdutf]
+import terse/[parser, types]
 import
   ./[
     coloring, config, grid, input, renderer, fonts, font_metrics, screen, spawner, types
@@ -128,6 +129,11 @@ proc run*(terminal: Terminal) =
             avoidSpam = true,
           )
 
+      terminal.parser.eat(
+        ParserInput(
+          data: cast[ptr UncheckedArray[uint8]](buf[0].addr), size: cast[uint64](n)
+        )
+      )
       discard vterm_input_write(terminal.vterm.vt, buf[0].addr, uint64(n))
 
     let event = &eventOpt
