@@ -1,7 +1,7 @@
 ## Parser for escape sequences
 ##
 ## Copyright (C) 2026 Trayambak Rai (xtrayambak@disroot.org)
-import ./[types]
+import ./[machine, types]
 
 func handleStrFragment*(
     parser: var Parser, str: openArray[byte], terminator: Terminator
@@ -16,11 +16,6 @@ func handleCSI(parser: var Parser, cmd: char) =
 
 func handleEscape(parser: var Parser, cmd: char) =
   debugEcho "Handle escape '" & cmd & '\''
-
-func handleText(parser: var Parser, str: openArray[byte]): uint64 =
-  let eaten = cast[uint64](str.len)
-
-  eaten - 1'u64
 
 func eat*(parser: var Parser, input: ParserInput) =
   var pos = 0'u64
@@ -149,7 +144,12 @@ func eat*(parser: var Parser, input: ParserInput) =
       else:
         var eaten = 0'u64
         eaten = handleText(
-          parser, toOpenArray(buffer, cast[int64](pos), cast[int64](input.size))
+          parser.machine,
+          toOpenArray(
+            cast[ptr UncheckedArray[char]](buffer),
+            cast[int64](pos),
+            cast[int64](input.size),
+          ),
         )
 
         if eaten == 0'u64:

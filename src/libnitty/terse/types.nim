@@ -46,6 +46,7 @@ type
 
   Parser* = object
     state*: ParserState
+    machine*: Machine # Super professional design, I know.
 
     inEscape*: bool
     intermed*: CappedBuffer[IntermedMax, char]
@@ -56,10 +57,15 @@ type
     data*: ptr UncheckedArray[uint8]
     size*: uint64
 
+  MachineCursor = object
+    row*, col*: uint32
+    savedRow*, savedCol*: uint32
+
   MachineObj = object
     parser*: Parser
     grid*: seq[Cell]
 
     rows*, cols*: uint32
+    cursor*: MachineCursor
 
   Machine* = ref MachineObj

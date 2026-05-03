@@ -29,8 +29,12 @@ type
     error*: ErrorCode
     count*: uint64
 
-proc validateUtf8*(
+func validateUtf8*(
   buf: ptr uint8 | ptr char, size: uint64
 ): bool {.importc: "simdutf_validate_utf8".}
+
+func validateUtf8WithErrors*(
+  buf: ptr uint8 | ptr char, size: uint64
+): Output {.importc: "simdutf_validate_utf8_with_errors".}
 
 {.pop.}
