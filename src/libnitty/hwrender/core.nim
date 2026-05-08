@@ -33,7 +33,7 @@ func toNVG(c: chroma.ColorRGBA): nanovg.Color =
   )
 
 proc renderCell(
-    hw: var HWRenderer, cell: sink VTermScreenCell, x, y, width, height: float32
+    hw: var HWRenderer, cell: VTermScreenCell, x, y, width, height: float32
 ) =
   # Draw the background
   hw.ctx.beginPath()
@@ -112,11 +112,7 @@ proc drawTerminal(hw: var HWRenderer) =
       )
 
       renderCell(
-        hw,
-        ensureMove(cell),
-        x,
-        y,
-        hw.terminal.fontMetrics.cellWidth,
+        hw, cell, x, y, hw.terminal.fontMetrics.cellWidth,
         hw.terminal.fontMetrics.cellHeight,
       )
 
