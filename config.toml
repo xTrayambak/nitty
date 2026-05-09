@@ -2,8 +2,10 @@
 background = "#5050500A"
 
 [font]
-family = "JetBrains Mono"
+name = "JetBrains Mono"
 size = 24.0
 
 [user]
-shell = "zsh"
+# shell = "zsh"
+# shell = "bash"
+bell = true
