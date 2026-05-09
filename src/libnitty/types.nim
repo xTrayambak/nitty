@@ -3,8 +3,11 @@
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
 import std/[importutils, monotimes, options]
 import pkg/[chroma, pixie]
-import bindings/libvterm, terse/types, ./font_metrics
+import bindings/libvterm, ./font_metrics
 import pkg/surfer/app, pkg/ybus/client/unix_sync
+
+when defined(libnittyTerse):
+  import terse/types
 
 privateAccess(pixie.Typeface)
 
@@ -29,7 +32,8 @@ type
   TerminalObj* = object
     app*: App
     bus*: BusClient
-    machine*: Machine
+    when defined(libnittyTerse):
+      machine*: Machine
 
     vterm*: VTermObj
     palette*: ColorPalette

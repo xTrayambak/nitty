@@ -17,7 +17,8 @@ func computeTermGrid*(terminal: Terminal, windowSize: IVec2) =
 
 proc resize*(terminal: Terminal) =
   vterm_set_size(terminal.vterm.vt, terminal.rows, terminal.cols)
-  terminal.machine.resize(uint32 terminal.rows, uint32 terminal.cols)
+  when defined(libnittyTerse):
+    terminal.machine.resize(uint32 terminal.rows, uint32 terminal.cols)
 
   var ws = winsize(wsRow: uint16(terminal.rows), wsCol: uint16(terminal.cols))
   discard pty.ioctl(terminal.vterm.fds.master, TIOCSWINSZ, ws.addr)

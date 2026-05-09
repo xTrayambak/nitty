@@ -4,8 +4,10 @@
 import std/[monotimes, os, posix, strutils, tables, times]
 import pkg/[vmath, shakar, chronicles, chroma, pixie]
 import pkg/surfer/app, pkg/ybus/client/unix_sync
-import bindings/[libvterm, simdutf]
-import terse/[machine, parser, types]
+import bindings/[libvterm]
+when defined(libnittyTerse):
+  import terse/[machine, parser, types]
+
 import
   ./[
     coloring, config, grid, input, renderer, fonts, font_metrics, screen, spawner, types
@@ -62,7 +64,8 @@ proc initializeBackend(terminal: Terminal) =
     cast[ptr TerminalObj](terminal),
   )
 
-  terminal.machine = initMachine(20, 30)
+  when defined(libnittyTerse):
+    terminal.machine = initMachine(20, 30)
 
 proc initializeDBus(terminal: Terminal) =
   ## Initialize a connection to the user's bus session
@@ -131,11 +134,12 @@ proc run*(terminal: Terminal) =
             avoidSpam = true,
           )
 
-      terminal.machine.parser.eat(
-        ParserInput(
-          data: cast[ptr UncheckedArray[uint8]](buf[0].addr), size: cast[uint64](n)
+      when defined(libnittyTerse):
+        terminal.machine.parser.eat(
+          ParserInput(
+            data: cast[ptr UncheckedArray[uint8]](buf[0].addr), size: cast[uint64](n)
+          )
         )
-      )
       discard vterm_input_write(terminal.vterm.vt, buf[0].addr, uint64(n))
 
     let event = &eventOpt
