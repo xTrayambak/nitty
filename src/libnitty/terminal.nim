@@ -175,10 +175,7 @@ proc run*(terminal: Terminal) =
     of EventKind.CursorClick:
       handleMouseClick(terminal, event.cursor.button, event.cursor.state)
     of EventKind.CursorFocusObtained:
-      when defined(setCursorShape):
-        # HACK: Every time I decide I was too harsh on Nimble, I get proven wrong.
-        # EVERY. SINGLE. TIME.
-        terminal.app.setCursorShape(CursorShape.Text)
+      terminal.app.setCursorShape(Shape.Text)
     else:
       discard
 
@@ -206,7 +203,7 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
       ControlFlow.Wait
   term.app.initialize()
 
-  debug "Creating window"
+  info "Creating window", features = term.app.features
   term.app.createWindow(ivec2(680, 480), Renderer.GLES)
 
   return term
