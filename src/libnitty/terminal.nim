@@ -205,5 +205,6 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
 
   info "Creating window", features = term.app.features
   term.app.createWindow(ivec2(680, 480), Renderer.GLES)
+  term.app.vsync = true
 
   return term
