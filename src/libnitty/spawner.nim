@@ -27,6 +27,9 @@ proc reapplyEnvVars(environ: Table[string, string]) =
   putEnv("NITTY_EXECUTABLE", os.getAppFilename())
   putEnv("NITTY_VERSION", meta.Version)
 
+  putEnv("TERM_PROGRAM", "nitty")
+  putEnv("TERM_PROGRAM_VERSION", meta.Version)
+
 proc spawn*(terminal: Terminal) =
   debug "Spawning master and child fds"
 
