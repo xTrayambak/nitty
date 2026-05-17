@@ -33,7 +33,10 @@ proc findUsableFont*(tryMono: bool = true): Option[string] =
   var file: ptr FcChar8
   if FcPatternGetString(match, FC_FILE, 0, file.addr) == FcResult.Match:
     return some($cast[cstring](file))
-  else:
+  elif tryMono:
+    # If we couldn't find a monospace font, we can try looking for a non-monospaced one.
+    # It isn't ideal because our rendering will look _HORRIBLE_, but it's better than
+    # not showing anything at all.
     return findUsableFont(tryMono = false)
 
 proc findFontPath*(name: string): Option[string] =
