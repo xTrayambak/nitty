@@ -50,7 +50,11 @@ proc spawn*(terminal: Terminal) =
   if pid == 0:
     reapplyEnvVars(environ)
 
-    let shell = findExe(terminal.shell)
+    let shell =
+      if not isAbsolute(terminal.shell):
+        findExe(terminal.shell)
+      else:
+        terminal.shell
     debug "Shell path. We're soon handing over control to the shell. Adios!",
       name = terminal.shell, path = shell
 

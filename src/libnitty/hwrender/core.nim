@@ -162,6 +162,9 @@ proc renderTerminal*(hw: var HWRenderer) =
 
   hw.ctx.endFrame()
 
+func isInvalid*(hw: var HWRenderer): bool {.inline, raises: [], cdecl.} =
+  hw.ctx == nil
+
 proc initHWRenderer*(terminal: Terminal): HWRenderer =
   assert(
     terminal.app.renderer == Renderer.GLES,
