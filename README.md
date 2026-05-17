@@ -20,6 +20,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - Ctrl+Plus and Ctrl+Minus to increase/decrease font size
 - Fast and responsive, thanks to the OpenGL (ES) based GPU renderer™
 - Tab completions in shells work
+- Can run apps as "layer widgets", essentially allowing them to act as desktop widgets.
 
 # Roadmap
 ## Features
@@ -31,7 +32,7 @@ You can join [the Discord server](https://discord.gg/q49NSg8eaG) here for help w
 - [X] Fractional scaling
 - [ ] Mouse input
 - [X] Bell
-- [ ] Layer-shell mode (e.g, for running `cmatrix` as a desktop widget!)
+- [X] Layer-shell mode (e.g, for running `cmatrix` as a desktop widget!)
 - [ ] Packaging for distros
 - [ ] More modern terminal protocols and stuff, but requires the completion of the goal below to be implemented neatly.
 
