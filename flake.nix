@@ -21,11 +21,12 @@
           inherit system;
           overlays = [ nim2nix.overlays.default ];
         };
+        version = "0.2.1";
       in
       {
         packages.default = pkgs.buildNimblePackage {
           pname = "nitty";
-          version = "0.2.1";
+          version = version;
           src = ./.;
 
           buildInputs = with pkgs; [
@@ -48,6 +49,7 @@
             "--define:release"
             "--opt:speed"
             "--define:lto"
+            "--define:NimblePkgVersion=${version}"
           ];
 
           meta = with pkgs.lib; {
