@@ -10,7 +10,10 @@ proc setTerminalProperty*(terminal: Terminal, prop: VTermProp, val: ptr VTermVal
   of VTermProp.Title:
     let title = $val.string
     debug "Setting window title from callback", title = title
-    terminal.app.setTitle(title)
+
+    if terminal.app.xdgToplevels.len > 0:
+      # Only attempt to set the title if we're not a layer shell surface.
+      terminal.app.setTitle(title)
   of VTermProp.CursorVisible:
     terminal.cursorVisible = val.boolean
   of VTermProp.Mouse:
