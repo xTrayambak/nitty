@@ -13,7 +13,7 @@ version = "2.2.0"
 [dependencies]
 pixie = ">= 5.1.0"
 shakar = ">= 0.1.3"
-surfer = ">= 0.2.1"
+surfer = ">= 0.2.3"
 xkb = ">= 1.4.1"
 vmath = ">= 2.0.1"
 chronicles = ">= 0.12.3"
