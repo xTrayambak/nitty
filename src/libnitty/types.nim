@@ -28,6 +28,7 @@ type
     drawFPSCounter*: bool
     program*: Option[string] ## Program to run instead of the shell
     disableDBus*: bool
+    layerWidgetConfigPath*: Option[string]
 
   TerminalObj* = object
     app*: App

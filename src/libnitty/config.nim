@@ -27,6 +27,19 @@ type
     font*: FontConfig
     user*: UserConfig
 
+  LayerSurfaceConfig* = object
+    layer*: string
+    anchors*: seq[string]
+    size*: array[2, uint32]
+    keyboard_interactivity*: string
+
+  LayerExecConfig* = object
+    cmd*: string
+
+  LayerConfig* = object
+    surface*: LayerSurfaceConfig
+    exec*: LayerExecConfig
+
 const
   AppearanceTabKey = "appearance"
   FontTabKey = "font"
@@ -45,6 +58,15 @@ const
     font: FontConfig(size: 24f),
     user: UserConfig(shell: "sh", bell: true),
   )
+
+  SurfaceTabKey = "surface"
+  ExecTabKey = "exec"
+
+  LayerAttrKey = "layer"
+  AnchorsAttrKey = "anchors"
+  LayerSurfaceSizeAttrKey = "size"
+  KeyboardInteractivityAttrKey = "keyboard_interactivity"
+  CmdAttrKey = "cmd"
 
 proc readConfig*(src: string): Option[Config] =
   try:
@@ -144,6 +166,70 @@ proc applyConfig*(terminal: Terminal, config: Config) {.raises: [PixieError].} =
 
   # Bell
   terminal.useBell = config.user.bell
+
+proc readLayerConfig*(src: string): Option[LayerConfig] =
+  try:
+    let data = parsetoml.parseString(src)
+
+    var config: LayerConfig
+    if SurfaceTabKey in data:
+      let surfaceTable = data[SurfaceTabKey]
+
+      config.surface.layer = surfaceTable[LayerAttrKey].getStr()
+      for i, value in surfaceTable[AnchorsAttrKey].getElems():
+        if i > 3:
+          raise newException(
+            ValueError,
+            "Attribute [surface:anchors] cannot have more than four elements!",
+          )
+
+        config.surface.anchors &= value.getStr()
+
+      for i, value in surfaceTable[LayerSurfaceSizeAttrKey].getElems():
+        if i > 1:
+          raise newException(
+            ValueError,
+            "Attribute [surface:size] cannot have more than two elements [x, y]!",
+          )
+
+        config.surface.size[i] = cast[uint32](value.getInt())
+
+      config.surface.keyboard_interactivity =
+        surfaceTable[KeyboardInteractivityAttrKey].getStr()
+
+    if ExecTabKey in data:
+      let execTable = data[ExecTabKey]
+
+      config.exec.cmd = execTable[CmdAttrKey].getStr()
+
+    return some(ensureMove(config))
+  except parsetoml.TomlError as exc:
+    error "Failed to parse layer configuration file! It seems to be malformed.",
+      exception = exc.msg, line = exc.location.line, column = exc.location.column
+    return none(LayerConfig)
+  except ValueError as exc:
+    error "Failed to parse layer configuration file! It seems to be have a spurious configuration.",
+      exception = exc.msg
+    return none(LayerConfig)
+
+proc loadLayerConfig*(
+    path: Option[string] = none(string), name: string
+): Option[LayerConfig] {.sideEffect.} =
+  ## This function reads a provided layer widget configuration (`name`).
+  ## If `path` is provided, the location of the configuration is assumed to be `{path}/{name}.toml`, otherwise the location is assumed to be `$XDG_CONFIG_HOME/nitty/layers/{name}.toml`
+  ## 
+  ## This function is not guaranteed to succeed in the event that the configuration is malformed. Its callers will likely abort execution after it reports a failure.
+  let path =
+    if *path:
+      &path / (name & ".toml")
+    else:
+      getConfigDir() / "nitty" / "layers" / (name & ".toml")
+
+  if not fileExists(path):
+    error "Cannot find layer widget configuration!", path = path
+    return none(LayerConfig)
+
+  readLayerConfig(readFile(path))
 
 proc loadConfig*(
     path: Option[string] = none(string)

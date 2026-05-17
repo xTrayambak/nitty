@@ -79,8 +79,7 @@ proc initializeDBus(terminal: Terminal) =
   info "Connected to DBus session",
     serial = terminal.bus.serial, uniqueName = terminal.bus.uniqueName
 
-proc initialize*(terminal: Terminal, args: TerminalArgs) =
-  terminal.args = args
+proc initialize*(terminal: Terminal) =
   initializeBackend(terminal)
   initializeDBus(terminal)
 
@@ -182,7 +181,7 @@ proc run*(terminal: Terminal) =
   info "The event loop has stopped. Alvida."
   discard close(terminal.vterm.fds.master)
 
-proc createTerminal*(title: string = "Nitty"): Terminal =
+proc createTerminal*(title: string = "Nitty", args: TerminalArgs): Terminal =
   debug "Initializing terminal emulator"
   discard initFontConfig()
 
@@ -191,6 +190,7 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
     cursorVisible: true,
     preferredRenderScale: 1.0f,
     palette: buildColorPalette(),
+    args: args,
   )
   applyConfig(term, loadConfig())
 
