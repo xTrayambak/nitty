@@ -79,13 +79,144 @@ proc initializeDBus(terminal: Terminal) =
   info "Connected to DBus session",
     serial = terminal.bus.serial, uniqueName = terminal.bus.uniqueName
 
-proc initialize*(terminal: Terminal, args: TerminalArgs) =
-  terminal.args = args
+proc initializeLayerWidget(terminal: Terminal): bool =
+  ## Initialize Nitty as a layer-shell widget.
+
+  # Firstly, parse the configuration file provided to us.
+  let layerConfigOpt = loadLayerConfig(name = &terminal.args.layerWidgetConfigPath)
+  if !layerConfigOpt:
+    return false
+
+  let layerConfig = &layerConfigOpt
+  info "Creating layer widget",
+    cmd = layerConfig.exec.cmd,
+    layer = layerConfig.surface.layer,
+    anchors = layerConfig.surface.anchors,
+    size = layerConfig.surface.size,
+    keyboardInteractivity = layerConfig.surface.keyboardInteractivity
+
+  let
+    layerStr = toLowerAscii(layerConfig.surface.layer)
+    interStr = toLowerAscii(layerConfig.surface.keyboardInteractivity)
+
+  var
+    layer: Layer
+    anchors: set[Anchor]
+    size: vmath.IVec2
+    keyboardInteractivity: KeyboardInteractivity
+
+  let fullExecPath =
+    if isAbsolute(layerConfig.exec.cmd):
+      layerConfig.exec.cmd
+    else:
+      findExe(layerConfig.exec.cmd)
+
+  if fullExecPath.len < 1:
+    error "Cannot resolve executable for widget", cmd = layerConfig.exec.cmd
+    return false
+
+  if layerStr == "background":
+    layer = Layer.Background
+  elif layerStr == "bottom":
+    layer = Layer.Bottom
+  elif layerStr == "top":
+    layer = Layer.Top
+  elif layerStr == "overlay":
+    layer = Layer.Overlay
+  else:
+    error "Unknown layer for widget", layer = layerConfig.surface.layer
+    return false
+
+  for anchor in layerConfig.surface.anchors:
+    let anchorStr = toLowerAscii(anchor)
+    if anchorStr == "top":
+      anchors.incl(Anchor.Top)
+    elif anchorStr == "bottom":
+      anchors.incl(Anchor.Bottom)
+    elif anchorStr == "left":
+      anchors.incl(Anchor.Left)
+    elif anchorStr == "right":
+      anchors.incl(Anchor.Right)
+    else:
+      error "Unknown anchor for widget", anchor = anchor
+      return false
+
+  size = cast[vmath.IVec2](cast[array[2, int32]](layerConfig.surface.size))
+    # Using proper routines for conversion? Nah.
+
+  if interStr == "none":
+    keyboardInteractivity = KeyboardInteractivity.None
+  elif interStr == "exclusive":
+    keyboardInteractivity = KeyboardInteractivity.Exclusive
+  elif interStr == "on_demand":
+    keyboardInteractivity = KeyboardInteractivity.OnDemand
+  else:
+    error "Unknown keyboard interactivity for widget",
+      interactivity = layerConfig.surface.keyboardInteractivity
+    return false
+
+  let namespace = "libnitty.widget." & &terminal.args.layerWidgetConfigPath
+
+  info "Creating layer shell widget",
+    layer = layer,
+    anchors = anchors,
+    interactivity = keyboardInteractivity,
+    namespace = namespace,
+    requestedSize = size
+
+  terminal.shell = ensureMove(fullExecPath)
+
+  terminal.app.createLayerSurface(
+    layer = ensureMove(layer),
+    anchors = ensureMove(anchors),
+    keyboardInteractivity = ensureMove(keyboardInteractivity),
+    namespace = namespace,
+    renderer = Renderer.GLES,
+    requestedSize = ensureMove(size),
+  )
+  return true
+
+proc initializeApp(terminal: Terminal): bool =
+  ## Initialize the Surfer context so we can actually show the terminal grid to
+  ## the user. This also handles layer widgets.
+  debug "Initializing surfer app"
+  terminal.app = newApp("Nitty", appId = "xyz.xtrayambak.nitty")
+  terminal.app.controlFlow =
+    if getEnv("NITTY_LOOP_METHOD", "wait").toLowerAscii() == "async":
+      ControlFlow.Async
+    else:
+      ControlFlow.Wait
+  terminal.app.initialize()
+
+  info "Creating window", features = terminal.app.features
+
+  if !terminal.args.layerWidgetConfigPath:
+    # If no widget config path is provided in arguments,
+    # we can just behave like a usual terminal emulator.
+    terminal.app.createWindow(ivec2(680, 480), Renderer.GLES)
+    terminal.app.vsync = true
+  else:
+    # If a configuration IS provided, we need to parse it and then accordingly
+    # create a layer shell surface based off of it.
+    if Feature.LayerShell notin terminal.app.features:
+      error "Cannot create layer widget as the host compositor does not support it (or atleast, it doesn't advertise support for it). Sorry :("
+      return false
+
+    return initializeLayerWidget(terminal)
+
+  debug "App init completed"
+  return true
+
+proc initialize*(terminal: Terminal) =
   initializeBackend(terminal)
   initializeDBus(terminal)
-
   if *terminal.args.program:
     terminal.shell = &terminal.args.program
+
+  assert(
+    initializeApp(terminal),
+    "App initialization failed. Check the above errors for more information.",
+  )
 
   spawn(terminal)
 
@@ -109,7 +240,7 @@ proc notify*(terminal: Terminal, summary, body: string, avoidSpam: bool = false)
   )
 
 proc run*(terminal: Terminal) =
-  var hwRenderer = initHWRenderer(terminal)
+  var hwRenderer: HWRenderer
 
   terminal.computeTermGrid(terminal.app.windowSize)
   terminal.resize()
@@ -145,7 +276,9 @@ proc run*(terminal: Terminal) =
     let event = &eventOpt
     case event.kind
     of EventKind.RedrawRequested:
-      renderTerminal(hwRenderer)
+      if not hwRenderer.isInvalid:
+        renderTerminal(hwRenderer)
+
       let currentTime = getMonoTime()
 
       terminal.fps =
@@ -160,6 +293,10 @@ proc run*(terminal: Terminal) =
       terminal.computeTermGrid(event.windowSize)
       terminal.resize()
       terminal.dirty = true
+
+      if hwRenderer.isInvalid:
+        hwRenderer = initHWRenderer(terminal)
+          # HACK: For layer shell widgets to work, we cannot initiate GL before the layer surface gets a configuration callback. And that is signified by a resize event being emitted.
     of EventKind.PreferredRenderScale:
       terminal.preferredRenderScale = float32(event.preferredScale) / 120'f32
       info "Got preferred rendering scale", scale = terminal.preferredRenderScale
@@ -182,7 +319,7 @@ proc run*(terminal: Terminal) =
   info "The event loop has stopped. Alvida."
   discard close(terminal.vterm.fds.master)
 
-proc createTerminal*(title: string = "Nitty"): Terminal =
+proc createTerminal*(args: TerminalArgs): Terminal =
   debug "Initializing terminal emulator"
   discard initFontConfig()
 
@@ -191,20 +328,8 @@ proc createTerminal*(title: string = "Nitty"): Terminal =
     cursorVisible: true,
     preferredRenderScale: 1.0f,
     palette: buildColorPalette(),
+    args: args,
   )
   applyConfig(term, loadConfig())
-
-  debug "Initializing surfer app"
-  term.app = newApp(title, appId = "xyz.xtrayambak.nitty")
-  term.app.controlFlow =
-    if getEnv("NITTY_LOOP_METHOD", "wait").toLowerAscii() == "async":
-      ControlFlow.Async
-    else:
-      ControlFlow.Wait
-  term.app.initialize()
-
-  info "Creating window", features = term.app.features
-  term.app.createWindow(ivec2(680, 480), Renderer.GLES)
-  term.app.vsync = true
 
   return term

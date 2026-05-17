@@ -1,0 +1,18 @@
+[surface]
+## Configuration for the layer-shell surface.
+
+# Reference: https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_shell_v1:enum:layer
+layer = "background" # We want the surface to be a background widget
+
+# Reference: https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:enum:anchor
+anchors = ["bottom", "right"] # We want the surface to be in the bottom-right corner of the display
+
+# The size in coordinates that we roughly want the surface to be.
+size = [640, 480] # Ideally, the surface should be 640x480 wide. It will allocate the terminal grid accordingly.
+
+# Reference: https://wayland.app/protocols/wlr-layer-shell-unstable-v1#zwlr_layer_surface_v1:enum:keyboard_interactivity
+keyboard_interactivity = "none" # We do not want to interact with this widget or to send it any keyboard input.
+
+[exec]
+# The program we wish to make the terminal run. This must be specified. It can be either absolute or relative (but only if it is available in PATH!)
+cmd = "cmatrix" # Hackerman B)

@@ -24,9 +24,10 @@ proc main() {.inline.} =
   args.drawFPSCounter = input.enabled("draw-fps-counter", "P")
   args.program = input.flag("program")
   args.disableDBus = input.enabled("no-dbus", "L")
+  args.layerWidgetConfigPath = input.flag("layer-widget-config")
 
-  let term = createTerminal()
-  term.initialize(args = ensureMove(args))
+  let term = createTerminal(args = ensureMove(args))
+  term.initialize()
   term.run()
 
   quit(QuitSuccess)
