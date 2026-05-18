@@ -6,7 +6,7 @@ import pkg/chronicles
 import bindings/fontconfig
 
 logScope:
-  topics = "libnitty font manager"
+  topics = "libnitty/fonts"
 
 proc initFontConfig*(): bool {.inline.} =
   debug "Initializing fontconfig"

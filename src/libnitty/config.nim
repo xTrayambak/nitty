@@ -6,7 +6,7 @@ import pkg/[chronicles, chroma, parsetoml, pixie, shakar]
 import ./[fonts, types]
 
 logScope:
-  topics = "libnitty config file"
+  topics = "libnitty/config"
 
 type
   AppearanceConfig = object
@@ -92,10 +92,13 @@ proc readConfig*(src: string): Option[Config] =
     if UserTabKey in data:
       let userTable = data[UserTabKey]
 
-      config.user.shell =
-        userTable[ShellAttrKey].getStr(default = DefaultConfig.user.shell)
-      config.user.bell =
-        userTable[BellAttrKey].getBool(default = DefaultConfig.user.bell)
+      if ShellAttrKey in userTable:
+        config.user.shell =
+          userTable[ShellAttrKey].getStr(default = DefaultConfig.user.shell)
+
+      if BellAttrKey in userTable:
+        config.user.bell =
+          userTable[BellAttrKey].getBool(default = DefaultConfig.user.bell)
 
     return some(ensureMove(config))
   except parsetoml.TomlError as exc:

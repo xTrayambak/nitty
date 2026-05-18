@@ -1,12 +1,12 @@
 ## Pseudoterminal spawner routine
 ##
 ## Copyright (C) 2025 Trayambak Rai (xtrayambak@disroot.org)
-import std/[os, posix, tables, termios]
+import std/[os, options, posix, tables, termios]
 import pkg/chronicles
 import ./[pty, types, meta]
 
 logScope:
-  topics = "libnitty spawner"
+  topics = "libnitty/spawner"
 
 proc enableMasterEcho(master: int32) =
   debug "Enabling master echo flag"
@@ -29,6 +29,19 @@ proc reapplyEnvVars(environ: Table[string, string]) =
 
   putEnv("TERM_PROGRAM", "nitty")
   putEnv("TERM_PROGRAM_VERSION", meta.Version)
+
+proc getUserDefaultShell*(): string {.inline.} =
+  ## Get the path to the user's default preferred shell.
+  ##
+  ## Returns "/bin/sh" if it cannot be inferred.
+  let pw = posix.getpwuid(posix.getuid())
+  if pw == nil:
+    return "/bin/sh"
+
+  if pw.pw_shell[0] == '\0':
+    return "/bin/sh"
+
+  $pw.pw_shell
 
 proc spawn*(terminal: Terminal) =
   debug "Spawning master and child fds"
@@ -53,11 +66,15 @@ proc spawn*(terminal: Terminal) =
   if pid == 0:
     reapplyEnvVars(environ)
 
-    let shell =
+    var shell =
       if not isAbsolute(terminal.shell):
         findExe(terminal.shell)
       else:
         terminal.shell
+
+    if shell.len < 1:
+      shell = getUserDefaultShell()
+
     debug "Shell path. We're soon handing over control to the shell. Adios!",
       name = terminal.shell, path = shell
 
