@@ -268,8 +268,8 @@
       }
     },
     "surfer": {
-      "version": "0.2.1",
-      "vcsRevision": "30c1575d193936fdde978277ad7d46b9e29e4efc",
+      "version": "0.2.3",
+      "vcsRevision": "1b810c1a10d9d22f836a69e3af27700b16b86a26",
       "url": "https://github.com/nim-windowing/surfer",
       "downloadMethod": "git",
       "dependencies": [
@@ -281,7 +281,7 @@
         "linux_input"
       ],
       "checksums": {
-        "sha1": "bab3847bf49e57f81b7117c42e5f7c2a5c3c913d"
+        "sha1": "4681e89125f2409fb252a09439553f8aef2a6b3c"
       }
     },
     "ybus": {
