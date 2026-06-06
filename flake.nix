@@ -43,7 +43,7 @@
           ];
 
           nimbleLockFile = ./nimble.lock;
-          nimbleDepsHash = "sha256-2YBZB5j5V24cDXzFK17TOw2wxa4SxwOHmwXRKBImpO8=";
+          nimbleDepsHash = "sha256-+vvHeGAPL/XAi4qBll/NnZliW+U9amy1P5Mq392Ail0=";
 
           nimFlags = [
             "--define:release"
