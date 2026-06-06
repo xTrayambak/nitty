@@ -3,7 +3,7 @@
   "packages": {
     "serialization": {
       "version": "0.5.2",
-      "commit": "1790d8a931fce125d6722f7ee8432ee8c054d297",
+      "commit": "b0f2fa32960ea532a184394b0f27be37bd80248b",
       "url": "https://github.com/status-im/nim-serialization",
       "checksum": "974c434b5e8d1369b7a78c38d864916a784b79ba32a28205b89cfbe59344df8b"
     },
@@ -21,9 +21,9 @@
     },
     "json_serialization": {
       "version": "0.4.4",
-      "commit": "f3e4bcbfa7b5eb518b3a6bcb3004176f9e0ee5af",
+      "commit": "c343b0e243d9e17e2c40f3a8a24340f7c4a71d44",
       "url": "https://github.com/status-im/nim-json-serialization",
-      "checksum": "3ec60fd8f4affccc179dfa2c50ae147e56cb656ce598d5a6ea6a10f10bf728d5"
+      "checksum": "6866da93ce9374da8b5f682530201d2b5695c17990ae59ae90a04eee212ed785"
     },
     "gh:nim-windowing/linux_input": {
       "version": "0.1.0",
@@ -68,10 +68,10 @@
       "checksum": "0957d2c2474abd002f3e8ea744fbd2ea6edc1a255894af28b5d80e2efacc3373"
     },
     "surfer": {
-      "version": "0.2.3",
-      "commit": "1b810c1a10d9d22f836a69e3af27700b16b86a26",
+      "version": "0.2.4",
+      "commit": "404c256ee7e07ab37640d4efb9df9ba345daf4cb",
       "url": "https://github.com/nim-windowing/surfer",
-      "checksum": "2dd30ac4e7ed961d145092bba18ea5cbf485d00d17fef4cfa6eb6d5f04d4110b"
+      "checksum": "98c77e777e2881b78cbd1d7463b39bbd57a1f12795e4b677a99c85bf5a048389"
     },
     "xkb": {
       "version": "1.4.1",
@@ -123,9 +123,9 @@
     },
     "unittest2": {
       "version": "0.2.5",
-      "commit": "92e1c13dcfb6d7e4ea6fb624fe9cc31e3dc76813",
+      "commit": "26f2ef3ae0ec72a2a75bfe557e02e88f6a31c189",
       "url": "https://github.com/status-im/nim-unittest2",
-      "checksum": "12afdb738d945870b0d9b7170f307780ef178aa66491f9f07419927941f60b4e"
+      "checksum": "c58bf647c7dd23de7a0c0d9ed487bdbf86a9069cdc87ee1762d5b6079e8d8663"
     },
     "nanovg": {
       "version": "0.3.4",

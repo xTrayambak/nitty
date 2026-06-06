@@ -1,6 +1,6 @@
 # Package
 
-version = "0.2.2"
+version = "0.2.3"
 author = "xTrayambak"
 description = "A fast, GPU-accelerated terminal emulator written in Nim"
 license = "BSD-3-Clause"

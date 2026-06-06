@@ -21,7 +21,7 @@
           inherit system;
           overlays = [ nim2nix.overlays.default ];
         };
-        version = "0.2.2";
+        version = "0.2.3";
       in
       {
         packages.default = pkgs.buildNimblePackage {

@@ -3,10 +3,6 @@ when defined(NeoPkgVersion) or defined(UseNeoDeps):
 
   --noNimblePath
   when withDir(thisDir(), system.fileExists("neo.paths")):
-    include "neo.paths" ## End of Neo lockfile config
+    include "neo.paths"
 
-when defined(NimblePkgVersion):
-  # begin Nimble config (version 2)
-  --noNimblePath
-  when withDir(thisDir(), system.fileExists("nimble.paths")):
-    include "nimble.paths" # end Nimble config
+  ## End of Neo lockfile config
